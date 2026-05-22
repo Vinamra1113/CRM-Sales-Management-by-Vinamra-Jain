@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -59,16 +58,35 @@ export function AppSidebar() {
   const { role, setRole } = useRole()
   const [theme, setTheme] = React.useState<"dark" | "light">("dark")
 
+  React.useEffect(() => {
+    // Check initial theme preference or default to dark
+    const isDark = document.documentElement.classList.contains("dark") || 
+                   (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    
+    if (isDark) {
+      document.documentElement.classList.add("dark")
+      setTheme("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+      setTheme("light")
+    }
+  }, [])
+
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark"
     setTheme(newTheme)
-    document.documentElement.classList.toggle("dark")
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+      localStorage.setItem("theme", "light")
+    }
   }
 
   const handleRoleChange = (value: string) => {
     const newRole = value as Role
     setRole(newRole)
-    // Automatically navigate to the hub of the selected role
     const navItem = navigation.find(n => n.role === newRole)
     if (navItem) {
       router.push(navItem.href)
