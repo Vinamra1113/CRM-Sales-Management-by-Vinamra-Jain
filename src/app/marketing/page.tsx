@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   BarChart3, 
   Send, 
@@ -12,16 +13,42 @@ import {
   ArrowUpRight,
   TrendingUp,
   MessageSquare,
-  FileText
+  FileText,
+  Plus,
+  Image as ImageIcon
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 export default function MarketingHub() {
+  const { toast } = useToast()
+  const [isCampaignOpen, setIsCampaignOpen] = React.useState(false)
+
+  const handleCreateCampaign = (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsCampaignOpen(false)
+    toast({
+      title: "Campaign Initiated",
+      description: "The new marketing push has been queued for synchronization.",
+    })
+  }
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -30,12 +57,38 @@ export default function MarketingHub() {
           <p className="text-muted-foreground">Campaign ROI tracking and sales-marketing alignment loops.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2">
+          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Shared", description: "84 qualified leads exported to Representative workspace." })}>
             <Send className="h-4 w-4" /> Share Leads
           </Button>
-          <Button className="bg-primary gap-2">
-            <Plus className="h-4 w-4" /> New Campaign
-          </Button>
+          
+          <Dialog open={isCampaignOpen} onOpenChange={setIsCampaignOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary gap-2">
+                <Plus className="h-4 w-4" /> New Campaign
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleCreateCampaign}>
+                <DialogHeader>
+                  <DialogTitle>Launch New Campaign</DialogTitle>
+                  <DialogDescription>Define the scope and target audience for your next sales support program.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="camp-name">Campaign Name</Label>
+                    <Input id="camp-name" placeholder="Q3 Enterprise Momentum" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="budget">Budget Allocation</Label>
+                    <Input id="budget" type="number" placeholder="50000" required />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Deploy Campaign</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -110,14 +163,12 @@ export default function MarketingHub() {
                 </div>
               </div>
             ))}
-            <Button variant="outline" className="w-full text-xs font-bold mt-2">Request Asset</Button>
+            <Button variant="outline" className="w-full text-xs font-bold mt-2" onClick={() => toast({ title: "Request Sent", description: "Design team has been notified of the content gap." })}>
+              Request Asset
+            </Button>
           </CardContent>
         </Card>
       </div>
     </div>
   )
-}
-
-function Plus({ className }: { className?: string }) {
-  return <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 3.33334V12.6667" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M3.33331 8H12.6666" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 }

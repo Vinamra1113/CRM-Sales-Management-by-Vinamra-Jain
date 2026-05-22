@@ -2,22 +2,20 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   LayoutDashboard, 
   TrendingUp, 
   Globe, 
   Activity, 
-  ArrowUpRight, 
   Target, 
-  Users,
-  PieChart as PieChartIcon
+  Users
 } from "lucide-react"
 import { 
   AreaChart, 
   Area, 
   XAxis, 
   YAxis, 
-  CartesianGrid, 
   Tooltip as RechartsTooltip, 
   ResponsiveContainer,
   PieChart,
@@ -28,7 +26,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 const revenueForecastData = [
@@ -56,11 +53,15 @@ export default function ExecutiveLeadershipHub() {
           <p className="text-muted-foreground">High-level business performance and global market intelligence.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2">
-            <Globe className="h-4 w-4" /> Regional KPIs
+          <Button variant="outline" className="border-border/50 gap-2" asChild>
+            <Link href="/dashboard">
+              <Globe className="h-4 w-4" /> Regional KPIs
+            </Link>
           </Button>
-          <Button className="bg-primary gap-2">
-            <TrendingUp className="h-4 w-4" /> Quarterly Forecast
+          <Button className="bg-primary gap-2" asChild>
+            <Link href="/dashboard">
+              <TrendingUp className="h-4 w-4" /> Quarterly Forecast
+            </Link>
           </Button>
         </div>
       </div>

@@ -2,26 +2,35 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   Workflow, 
   Users, 
   MapPin, 
   CheckCircle2, 
   XCircle, 
-  Percent, 
   TrendingUp,
-  BarChart3,
-  ChevronRight
+  BarChart3
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 export default function SalesManagerHub() {
+  const { toast } = useToast()
+
+  const handleAction = (type: 'approve' | 'decline', deal: string) => {
+    toast({
+      variant: type === 'decline' ? 'destructive' : 'default',
+      title: type === 'approve' ? "Discount Approved" : "Discount Declined",
+      description: `${type === 'approve' ? 'Successfully approved' : 'Declined'} discount request for ${deal}.`,
+    })
+  }
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -30,11 +39,15 @@ export default function SalesManagerHub() {
           <p className="text-muted-foreground">Team performance orchestration and governance control center.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2">
-            <MapPin className="h-4 w-4" /> Territories
+          <Button variant="outline" className="border-border/50 gap-2" asChild>
+            <Link href="/orchestrator">
+              <MapPin className="h-4 w-4" /> Territories
+            </Link>
           </Button>
-          <Button className="bg-primary gap-2">
-            <TrendingUp className="h-4 w-4" /> Forecast Review
+          <Button className="bg-primary gap-2" asChild>
+            <Link href="/executive">
+              <TrendingUp className="h-4 w-4" /> Forecast Review
+            </Link>
           </Button>
         </div>
       </div>
@@ -82,8 +95,8 @@ export default function SalesManagerHub() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="h-8 text-destructive hover:bg-destructive/10"><XCircle className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-primary hover:bg-primary/10"><CheckCircle2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleAction('decline', req.deal)} className="h-8 text-destructive hover:bg-destructive/10"><XCircle className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleAction('approve', req.deal)} className="h-8 text-primary hover:bg-primary/10"><CheckCircle2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
               ))}
@@ -110,7 +123,9 @@ export default function SalesManagerHub() {
                 <div className="text-xs font-bold">{rep.quota}%</div>
               </div>
             ))}
-            <Button variant="outline" className="w-full text-xs font-bold mt-2">Team Analytics</Button>
+            <Button variant="outline" className="w-full text-xs font-bold mt-2" asChild>
+              <Link href="/performance">Team Analytics</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   HeartPulse, 
   Bell, 
@@ -17,11 +18,20 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetDescription, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger 
+} from "@/components/ui/sheet"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 export default function AccountManagerHub() {
+  const { toast } = useToast()
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -30,11 +40,43 @@ export default function AccountManagerHub() {
           <p className="text-muted-foreground">Strategic account planning and proactive retention management.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2">
-            <FileText className="h-4 w-4" /> Account Plans
-          </Button>
-          <Button className="bg-primary gap-2">
-            <Bell className="h-4 w-4" /> Renewal Alerts
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="border-border/50 gap-2">
+                <FileText className="h-4 w-4" /> Account Plans
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+              <SheetHeader>
+                <SheetTitle>Strategic Account Plans</SheetTitle>
+                <SheetDescription>Overview of active growth strategies for your primary book of business.</SheetDescription>
+              </SheetHeader>
+              <div className="py-6 space-y-6">
+                {[
+                  { name: "CyberDyne Systems", plan: "Cloud Expansion Phase 2", progress: 65 },
+                  { name: "Zenith Corp", plan: "Enterprise Suite Migration", progress: 82 },
+                  { name: "Atlas Solutions", plan: "Retention Safeguard Plan", progress: 30 },
+                ].map((plan, i) => (
+                  <div key={i} className="space-y-2 p-4 rounded-lg border bg-card">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold">{plan.name}</span>
+                      <Badge variant="secondary">{plan.progress}%</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{plan.plan}</p>
+                    <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                      <div className="h-full bg-primary" style={{ width: `${plan.progress}%` }} />
+                    </div>
+                  </div>
+                ))}
+                <Button className="w-full" onClick={() => toast({ title: "New Plan Drafted", description: "Select an account to finalize details." })}>Create New Plan</Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+          
+          <Button className="bg-primary gap-2" asChild>
+            <Link href="/health">
+              <Bell className="h-4 w-4" /> Renewal Alerts
+            </Link>
           </Button>
         </div>
       </div>
@@ -112,7 +154,9 @@ export default function AccountManagerHub() {
                 </div>
               </div>
             ))}
-            <Button variant="outline" className="w-full text-xs font-bold mt-2">Full History</Button>
+            <Button variant="outline" className="w-full text-xs font-bold mt-2" asChild>
+              <Link href="/customers">Full History</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

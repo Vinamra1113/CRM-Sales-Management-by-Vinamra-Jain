@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   Package, 
   Rocket, 
@@ -19,9 +20,24 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 export default function ProductManagerHub() {
+  const { toast } = useToast()
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -30,12 +46,40 @@ export default function ProductManagerHub() {
           <p className="text-muted-foreground">Roadmap synchronization and customer feedback intelligence.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2">
-            <Rocket className="h-4 w-4" /> Public Roadmap
+          <Button variant="outline" className="border-border/50 gap-2" asChild>
+            <Link href="/collaboration">
+              <Rocket className="h-4 w-4" /> Public Roadmap
+            </Link>
           </Button>
-          <Button className="bg-primary gap-2">
-            <Plus className="h-4 w-4" /> Share Update
-          </Button>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-primary gap-2">
+                <Plus className="h-4 w-4" /> Share Update
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={(e) => { e.preventDefault(); toast({ title: "Update Shared", description: "Release notes distributed to internal sales channels." }) }}>
+                <DialogHeader>
+                  <DialogTitle>Broadcast Product Update</DialogTitle>
+                  <DialogDescription>Inform the sales team about new features or critical bug fixes.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="update-title">Version / Title</Label>
+                    <Input id="update-title" placeholder="v2.4.1 - Performance Patches" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="impact">Key Sales Impact</Label>
+                    <Textarea id="impact" placeholder="Explain how this helps close deals..." required />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Publish Update</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -110,7 +154,9 @@ export default function ProductManagerHub() {
                 </div>
               ))}
             </div>
-            <Button variant="outline" className="w-full text-xs font-bold mt-2">Update Docs</Button>
+            <Button variant="outline" className="w-full text-xs font-bold mt-2" onClick={() => toast({ title: "Internal Docs Updated", description: "Changes pushed to Technical Wiki." })}>
+              Update Docs
+            </Button>
           </CardContent>
         </Card>
       </div>
