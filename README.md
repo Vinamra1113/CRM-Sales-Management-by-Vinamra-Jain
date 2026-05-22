@@ -12,6 +12,7 @@ The mission of this project is to bridge the gap between field intelligence and 
 - [Strategic Benefits](./docs/benefits.md)
 - [Alternate Approach](./docs/alternate-approach.md)
 - [Project Assumptions](./docs/assumptions.md)
+- [Visual Documentation](./docs/visuals.md)
 
 ## Persona-Based Workspaces
 
