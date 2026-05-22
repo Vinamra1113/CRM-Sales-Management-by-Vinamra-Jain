@@ -9,7 +9,8 @@ import {
   CheckCircle2,
   Trash2,
   Edit,
-  ArrowRight
+  ArrowRight,
+  ChevronRight
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -41,7 +42,7 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { FEATURE_REQUESTS as INITIAL_REQUESTS, CUSTOMERS } from "@/lib/data"
 import { useFirestore, useCollection } from "@/firebase"
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore"
+import { collection, addDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 
