@@ -102,6 +102,22 @@ export type Feedback = {
   satisfaction: string;
 };
 
+export type FeatureRequest = {
+  id: string;
+  customerId: string;
+  feature: string;
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  status: 'Backlog' | 'Planned' | 'In Development' | 'Released';
+};
+
+export type ExecutiveKPI = {
+  region: string;
+  revenue: number;
+  winRate: number;
+  forecast: number;
+  growth: number;
+};
+
 export const SALES_REPS: SalesRep[] = [
   { id: "SR001", name: "Allison Hill", region: "North", target: 56556, achievement: 92097, score: 69.8 },
   { id: "SR002", name: "Noah Rhodes", region: "South", target: 76868, achievement: 162964, score: 63.48 },
@@ -130,65 +146,115 @@ export const SALES_REPS: SalesRep[] = [
   { id: "SR025", name: "Matthew Foster", region: "South", target: 86262, achievement: 153569, score: 79.74 }
 ];
 
-export const CUSTOMERS: Customer[] = [
-  { id: "CUST0001", name: "Ellis, Baker and Wright", industry: "IT", region: "North", revenue: 1382125, since: "2023-03-01", manager: "Margaret Hawkins DDS", satisfaction: 2.9 },
-  { id: "CUST0002", name: "Baker, Richards and Hurst", industry: "Education", region: "West", revenue: 632909, since: "2021-10-13", manager: "Lisa Hensley", satisfaction: 3.5 },
-  { id: "CUST0003", name: "Robinson-Bright", industry: "Retail", region: "Central", revenue: 2209014, since: "2022-09-21", manager: "Derek Zuniga", satisfaction: 4.7 },
-  { id: "CUST0004", name: "Davis-Williams", industry: "IT", region: "North", revenue: 4604433, since: "2019-04-27", manager: "Matthew Foster", satisfaction: 3.2 },
-  { id: "CUST0005", name: "Burton Ltd", industry: "Education", region: "East", revenue: 1035767, since: "2021-12-23", manager: "Ryan Munoz", satisfaction: 3.6 },
-  { id: "CUST0006", name: "Brown, James and Ferrell", industry: "Retail", region: "North", revenue: 2309467, since: "2022-11-20", manager: "Holly Wood", satisfaction: 4.4 },
-  { id: "CUST0007", name: "Maddox-Valencia", industry: "Manufacturing", region: "North", revenue: 2603536, since: "2018-06-26", manager: "Margaret Hawkins DDS", satisfaction: 3.8 },
-  { id: "CUST0008", name: "Le, Maldonado and Herrera", industry: "Finance", region: "South", revenue: 3236616, since: "2020-08-27", manager: "Matthew Foster", satisfaction: 2.9 },
-  { id: "CUST0009", name: "Peterson, Carter and Moore", industry: "Manufacturing", region: "North", revenue: 2819218, since: "2018-06-01", manager: "Brian Ramirez", satisfaction: 2.5 },
-  { id: "CUST0010", name: "Liu, Baker and Mason", industry: "Healthcare", region: "East", revenue: 2108671, since: "2019-11-28", manager: "Noah Rhodes", satisfaction: 3.1 }
-];
+export const CUSTOMERS: Customer[] = Array.from({ length: 250 }).map((_, i) => ({
+  id: `CUST${(i + 1).toString().padStart(4, '0')}`,
+  name: `Client ${i + 1}`,
+  industry: ["IT", "Education", "Retail", "Manufacturing", "Finance", "Healthcare"][i % 6],
+  region: ["North", "South", "East", "West", "Central"][i % 5],
+  revenue: Math.floor(Math.random() * 5000000) + 100000,
+  since: "2020-01-01",
+  manager: SALES_REPS[i % 25].name,
+  satisfaction: parseFloat((Math.random() * 3 + 2).toFixed(1))
+}));
 
-export const SALES_ACTIVITIES: SalesActivity[] = [
-  { id: "ACT00001", repId: "SR023", customerId: "CUST0022", type: "Follow-up", date: "2025-12-26", status: "In Progress", notes: "Whole today Congress out conference never song but." },
-  { id: "ACT00002", repId: "SR002", customerId: "CUST0064", type: "Demo", date: "2024-08-29", status: "Pending", notes: "Deal claim none surface alone woman media hair name institution war a feel." },
-  { id: "ACT00003", repId: "SR017", customerId: "CUST0134", type: "Follow-up", date: "2025-06-28", status: "In Progress", notes: "Process knowledge officer reason mission worry goal Mrs decide." },
-  { id: "ACT00004", repId: "SR012", customerId: "CUST0096", type: "Email", date: "2024-08-05", status: "Pending", notes: "Down could feel strategy whatever own." },
-  { id: "ACT00005", repId: "SR014", customerId: "CUST0199", type: "Email", date: "2024-11-04", status: "Open", notes: "Grow campaign performance avoid effort high tough hundred bar effect international reason movie." },
-  { id: "ACT00006", repId: "SR001", customerId: "CUST0001", type: "Call", date: "2024-03-24", status: "Completed", notes: "Initial discovery call with the tech team." },
-  { id: "ACT00007", repId: "SR001", customerId: "CUST0001", type: "Email", date: "2024-03-26", status: "Completed", notes: "Followed up with product brochures." },
-  { id: "ACT00008", repId: "SR001", customerId: "CUST0001", type: "Meeting", date: "2024-04-02", status: "Completed", notes: "Quarterly review and expansion discussion." }
-];
+export const CONTACTS: Contact[] = Array.from({ length: 350 }).map((_, i) => ({
+  id: `CONT${(i + 1).toString().padStart(4, '0')}`,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  name: `Contact ${i + 1}`,
+  email: `contact${i + 1}@example.com`,
+  phone: `555-${(1000 + i).toString()}`,
+  jobTitle: ["Manager", "Director", "VP", "Analyst", "Lead"][i % 5],
+  lastInteraction: "2024-03-01"
+}));
 
-export const OPPORTUNITIES: Opportunity[] = [
-  { id: "OPP0001", customerId: "CUST0233", repId: "SR014", product: "Sales Booster", stage: "Qualified", value: 485830, closeDate: "2026-07-30", probability: 30 },
-  { id: "OPP0002", customerId: "CUST0018", repId: "SR011", product: "Sales Booster", stage: "Closed Won", value: 382194, closeDate: "2026-08-29", probability: 25 },
-  { id: "OPP0003", customerId: "CUST0082", repId: "SR006", product: "CRM Suite", stage: "Qualified", value: 406308, closeDate: "2026-09-16", probability: 50 },
-  { id: "OPP0004", customerId: "CUST0247", repId: "SR014", product: "CloudSync", stage: "Negotiation", value: 237261, closeDate: "2026-06-20", probability: 91 },
-  { id: "OPP0005", customerId: "CUST0071", repId: "SR024", product: "Analytics Pro", stage: "Qualified", value: 60978, closeDate: "2026-08-11", probability: 26 },
-  { id: "OPP0006", customerId: "CUST0007", repId: "SR001", product: "Sales Booster", stage: "Closed Won", value: 144912, closeDate: "2026-08-25", probability: 87 }
-];
+export const SALES_ACTIVITIES: SalesActivity[] = Array.from({ length: 1200 }).map((_, i) => ({
+  id: `ACT${(i + 1).toString().padStart(5, '0')}`,
+  repId: SALES_REPS[i % 25].id,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  type: ["Call", "Email", "Meeting", "Demo", "Follow-up"][i % 5],
+  date: "2024-03-24",
+  status: ["Completed", "Pending", "In Progress", "Open"][i % 4],
+  notes: "Interaction notes recorded in the field."
+}));
 
-export const CAMPAIGNS: Campaign[] = [
-  { id: "CAMP001", name: "Paid Ads Campaign 1", type: "Webinar", budget: 24472, leadsGenerated: 217, roi: 1.61 },
-  { id: "CAMP002", name: "Webinar Campaign 2", type: "Social Media", budget: 71619, leadsGenerated: 349, roi: 4.49 }
-];
+export const OPPORTUNITIES: Opportunity[] = Array.from({ length: 700 }).map((_, i) => ({
+  id: `OPP${(i + 1).toString().padStart(4, '0')}`,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  repId: SALES_REPS[i % 25].id,
+  product: ["Sales Booster", "CRM Suite", "CloudSync", "Analytics Pro", "AI Assistant"][i % 5],
+  stage: ["Prospecting", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"][i % 6],
+  value: Math.floor(Math.random() * 500000) + 5000,
+  closeDate: "2026-08-25",
+  probability: Math.floor(Math.random() * 100)
+}));
 
-export const LEADS: Lead[] = [
-  { id: "LEAD0001", source: "Email Campaign 52", assignedRep: "Margaret Hawkins DDS", score: 41, status: "New", date: "2026-03-26" },
-  { id: "LEAD0002", source: "SEO Campaign 50", assignedRep: "Abigail Shaffer", score: 59, status: "Qualified", date: "2026-02-14" }
-];
+export const CAMPAIGNS: Campaign[] = Array.from({ length: 80 }).map((_, i) => ({
+  id: `CAMP${(i + 1).toString().padStart(3, '0')}`,
+  name: `${["Paid Ads", "Webinar", "Social Media", "Email", "SEO"][i % 5]} Campaign ${i + 1}`,
+  type: ["Webinar", "Social Media", "Email", "SEO", "Paid Ads"][i % 5],
+  budget: Math.floor(Math.random() * 90000) + 5000,
+  leadsGenerated: Math.floor(Math.random() * 500),
+  roi: parseFloat((Math.random() * 4 + 1).toFixed(2))
+}));
 
-export const DISCOUNTS: DiscountRequest[] = [
-  { id: "DISC0001", repName: "Abigail Shaffer", customerId: "CUST0008", percent: 16, status: "Approved", date: "2025-06-28" }
-];
+export const LEADS: Lead[] = Array.from({ length: 500 }).map((_, i) => ({
+  id: `LEAD${(i + 1).toString().padStart(4, '0')}`,
+  leadSource: CAMPAIGNS[i % 80].name,
+  assignedRep: SALES_REPS[i % 25].name,
+  score: Math.floor(Math.random() * 100),
+  status: ["New", "Contacted", "Qualified", "Converted"][i % 4],
+  date: "2026-03-26"
+}));
 
-export const ACCOUNT_PLANS: AccountPlan[] = [
-  { id: "PLAN0001", customerId: "CUST0001", goal: "Offer position his.", targetRevenue: 759513, reviewDate: "2027-04-05" }
-];
+export const DISCOUNTS: DiscountRequest[] = Array.from({ length: 300 }).map((_, i) => ({
+  id: `DISC${(i + 1).toString().padStart(4, '0')}`,
+  repName: SALES_REPS[i % 25].name,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  percent: Math.floor(Math.random() * 25) + 5,
+  status: ["Approved", "Pending", "Rejected"][i % 3] as any,
+  date: "2025-06-28"
+}));
 
-export const RENEWALS: Renewal[] = [
-  { id: "REN0001", customerId: "CUST0001", endDate: "2027-11-28", reminderDate: "2027-04-15", status: "Pending" }
-];
+export const ACCOUNT_PLANS: AccountPlan[] = Array.from({ length: 200 }).map((_, i) => ({
+  id: `PLAN${(i + 1).toString().padStart(4, '0')}`,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  goal: "Strategic growth and service expansion.",
+  targetRevenue: Math.floor(Math.random() * 1000000) + 50000,
+  reviewDate: "2027-04-05"
+}));
 
-export const FEEDBACK: Feedback[] = [
-  { id: "FDB0001", customerId: "CUST0001", product: "CloudSync", category: "Performance", text: "Agency rock however simply policy least husband option.", satisfaction: "Unsatisfied" }
-];
+export const RENEWALS: Renewal[] = Array.from({ length: 250 }).map((_, i) => ({
+  id: `REN${(i + 1).toString().padStart(4, '0')}`,
+  customerId: `CUST${(i + 1).toString().padStart(4, '0')}`,
+  endDate: "2027-11-28",
+  reminderDate: "2027-04-15",
+  status: ["Pending", "Renewed", "Upcoming"][i % 3] as any
+}));
 
-export const CONTACTS: Contact[] = [
-  { id: "CONT0001", customerId: "CUST0001", name: "Curtis Buchanan", email: "maria47@yahoo.com", phone: "001-517-123-6851x6048", jobTitle: "Community pharmacist", lastInteraction: "2025-11-13" }
+export const FEEDBACK: Feedback[] = Array.from({ length: 400 }).map((_, i) => ({
+  id: `FDB${(i + 1).toString().padStart(4, '0')}`,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  product: ["CloudSync", "AI Assistant", "Sales Booster", "Analytics Pro", "CRM Suite"][i % 5],
+  category: ["Performance", "Bug", "Usability", "Feature"][i % 4],
+  text: "User reported detailed feedback regarding application performance and features.",
+  satisfaction: ["Unsatisfied", "Satisfied", "Neutral", "Very Satisfied"][i % 4]
+}));
+
+export const FEATURE_REQUESTS: FeatureRequest[] = Array.from({ length: 250 }).map((_, i) => ({
+  id: `FR${(i + 1).toString().padStart(4, '0')}`,
+  customerId: `CUST${((i % 250) + 1).toString().padStart(4, '0')}`,
+  feature: [
+    "Cross-group implementation", "Digitized needs-based definition", "Fully-configurable interface",
+    "Reactive regional application", "Synergistic budgetary management", "Multi-lateral didactic database"
+  ][i % 6],
+  priority: ["Low", "Medium", "High", "Critical"][i % 4] as any,
+  status: ["Backlog", "Planned", "In Development", "Released"][i % 4] as any
+}));
+
+export const EXECUTIVE_KPI_DATA: ExecutiveKPI[] = [
+  { region: "North", revenue: 6030776, winRate: 28.64, forecast: 4358189, growth: 15.26 },
+  { region: "South", revenue: 4808186, winRate: 79.25, forecast: 1548779, growth: 26.0 },
+  { region: "East", revenue: 6921373, winRate: 32.49, forecast: 3904033, growth: 15.53 },
+  { region: "West", revenue: 8008273, winRate: 47.63, forecast: 4294266, growth: 16.1 },
+  { region: "Central", revenue: 7516989, winRate: 47.81, forecast: 3333682, growth: 13.15 }
 ];
