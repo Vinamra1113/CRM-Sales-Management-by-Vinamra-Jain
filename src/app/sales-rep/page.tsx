@@ -37,7 +37,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { SALES_REPS, OPPORTUNITIES, CONTACTS, CUSTOMERS, ACTIVITIES } from "@/lib/data"
+import { SALES_REPS, OPPORTUNITIES, CONTACTS, CUSTOMERS, SALES_ACTIVITIES } from "@/lib/data"
 
 export default function SalesRepresentativeHub() {
   const { toast } = useToast()
@@ -48,9 +48,16 @@ export default function SalesRepresentativeHub() {
   const quotaPercent = (currentUser.achievement / currentUser.target) * 100;
   const remaining = Math.max(0, currentUser.target - currentUser.achievement);
 
-  // Data mapping for Allison
-  const userOpps = OPPORTUNITIES.slice(0, 4); // Show some deals
-  const userContacts = CONTACTS.slice(0, 5); // Show some contacts
+  // Data mapping for the current representative
+  const userOpps = OPPORTUNITIES.filter(o => o.repId === currentUser.id).slice(0, 4);
+  
+  // Contacts are filtered by finding customers managed by this rep and getting their associated contacts
+  const userContacts = CONTACTS.filter(contact => {
+    const customer = CUSTOMERS.find(c => c.id === contact.customerId);
+    return customer?.manager === currentUser.name;
+  }).slice(0, 5);
+
+  const userActivitiesCount = SALES_ACTIVITIES.filter(a => a.repId === currentUser.id).length;
 
   const handleLogActivity = (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,7 +118,7 @@ export default function SalesRepresentativeHub() {
           { label: "My Quota", value: `${quotaPercent.toFixed(1)}%`, sub: `$${remaining.toLocaleString()} remaining`, icon: Target, color: "text-accent" },
           { label: "Active Deals", value: userOpps.length.toString(), sub: `$${currentUser.achievement.toLocaleString()} achievement`, icon: Layers, color: "text-primary" },
           { label: "Performance Score", value: currentUser.score.toString(), sub: `Region: ${currentUser.region}`, icon: TrendingUp, color: "text-accent" },
-          { label: "Recent Activities", value: ACTIVITIES.length.toString(), sub: "Last 7 days", icon: Clock, color: "text-primary" },
+          { label: "Total Activities", value: userActivitiesCount.toString(), sub: "Lifetime record", icon: Clock, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -138,7 +145,7 @@ export default function SalesRepresentativeHub() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {userOpps.map((opp) => (
+            {userOpps.length > 0 ? userOpps.map((opp) => (
               <div key={opp.id} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:border-primary/30 transition-all cursor-pointer">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
@@ -155,7 +162,9 @@ export default function SalesRepresentativeHub() {
                   <Progress value={opp.probability} className="h-1 w-20 bg-secondary" />
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="py-8 text-center text-muted-foreground text-sm">No active opportunities found.</div>
+            )}
           </CardContent>
         </Card>
 
@@ -164,7 +173,7 @@ export default function SalesRepresentativeHub() {
             <CardTitle className="text-lg font-headline">Recent Contacts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {userContacts.map((contact) => (
+            {userContacts.length > 0 ? userContacts.map((contact) => (
               <div key={contact.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer group">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={`https://picsum.photos/seed/${contact.id}/100/100`} />
@@ -179,7 +188,9 @@ export default function SalesRepresentativeHub() {
                   <Button variant="ghost" size="icon" className="h-7 w-7"><Phone className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="py-8 text-center text-muted-foreground text-sm">No contacts assigned.</div>
+            )}
             <Button variant="outline" className="w-full text-xs font-bold mt-2" asChild>
               <Link href="/customers">Open Contact Ledger</Link>
             </Button>
