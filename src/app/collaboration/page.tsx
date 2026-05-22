@@ -76,7 +76,7 @@ export default function ProductBridge() {
                       item.priority === "High" ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
                     )}>
                       {item.priority}
-                    </priority>
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                     <span className="font-code text-accent">{item.id}</span>
