@@ -28,6 +28,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 const customers = [
   { id: 1, name: "Sarah Jenkins", company: "CyberDyne Systems", role: "CTO", industry: "Tech", health: "Good", spent: 450000, lastContact: "2 days ago" },
