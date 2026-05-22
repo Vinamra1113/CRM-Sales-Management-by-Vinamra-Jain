@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -16,11 +15,55 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { DISCOUNTS, CUSTOMERS, LEADS } from "@/lib/data"
+import { DISCOUNTS as INITIAL_DISCOUNTS, CUSTOMERS, LEADS } from "@/lib/data"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, doc, updateDoc } from "firebase/firestore"
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function LeadOrchestrator() {
-  const pendingDiscounts = DISCOUNTS.filter(d => d.status === 'Pending');
+  const { toast } = useToast()
+  const db = useFirestore()
+  const { data: dbDiscounts = [] } = useCollection<any>(db ? collection(db, "discounts") : null)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const discounts = dbDiscounts.length > 0 ? dbDiscounts : INITIAL_DISCOUNTS;
+  const pendingDiscounts = discounts.filter(d => (d.status || d.ApprovalStatus) === 'Pending');
+
+  const handleAction = (type: 'approve' | 'decline', discountId: string) => {
+    if (!db) return
+    
+    const newStatus = type === 'approve' ? 'Approved' : 'Rejected';
+    const docRef = doc(db, "discounts", discountId);
+    
+    updateDoc(docRef, {
+      status: newStatus,
+      ApprovalStatus: newStatus
+    })
+    .then(() => {
+      toast({
+        variant: type === 'decline' ? 'destructive' : 'default',
+        title: type === 'approve' ? "Discount Approved" : "Discount Declined",
+        description: `Request ${discountId} has been ${newStatus.toLowerCase()}.`,
+      })
+    })
+    .catch(async (err) => {
+      const permsError = new FirestorePermissionError({
+        path: docRef.path,
+        operation: 'update',
+        requestResourceData: { status: newStatus }
+      });
+      errorEmitter.emit('permission-error', permsError);
+    });
+  }
+
+  if (!mounted) return null
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
@@ -43,31 +86,45 @@ export default function LeadOrchestrator() {
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
               {pendingDiscounts.map((req) => (
-                <div key={req.id} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 hover:bg-muted/20 transition-all group">
+                <div key={req.id || req.RequestID} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 hover:bg-muted/20 transition-all group">
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm">
-                        {CUSTOMERS.find(c => c.id === req.customerId)?.name || "Unknown Deal"}
+                        {CUSTOMERS.find(c => c.id === (req.customerId || req.CustomerID))?.name || "Unknown Deal"}
                       </span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-medium">via {req.repName}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-medium">via {req.repName || req.SalesRep}</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       <div className="flex items-center gap-1 text-accent font-code">
-                        <Percent className="h-3 w-3" /> {req.percent}% Discount
+                        <Percent className="h-3 w-3" /> {req.percent || req.RequestedDiscountPercent}% Discount
                       </div>
-                      <div className="text-muted-foreground">Requested: {req.date}</div>
+                      <div className="text-muted-foreground">Requested: {req.date || req.RequestedDate}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 w-full md:w-auto">
-                    <Button variant="outline" size="sm" className="flex-1 md:flex-none h-8 text-[10px] uppercase font-bold border-destructive/20 text-destructive hover:bg-destructive/10">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 md:flex-none h-8 text-[10px] uppercase font-bold border-destructive/20 text-destructive hover:bg-destructive/10"
+                      onClick={() => handleAction('decline', req.id || req.RequestID)}
+                    >
                       <XCircle className="h-3.5 w-3.5 mr-1" /> Decline
                     </Button>
-                    <Button size="sm" className="flex-1 md:flex-none h-8 text-[10px] uppercase font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                    <Button 
+                      size="sm" 
+                      className="flex-1 md:flex-none h-8 text-[10px] uppercase font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                      onClick={() => handleAction('approve', req.id || req.RequestID)}
+                    >
                       <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Approve
                     </Button>
                   </div>
                 </div>
               ))}
+              {pendingDiscounts.length === 0 && (
+                <div className="p-12 text-center text-muted-foreground text-sm">
+                  All discount requests have been processed.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -130,7 +187,7 @@ export default function LeadOrchestrator() {
           <CardHeader>
             <CardTitle className="text-sm">Global Lead Velocity History</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 h-[240px] bg-[url('https://picsum.photos/seed/velocity/800/400')] bg-cover bg-center">
+          <CardContent className="p-0 h-[240px] bg-[url('https://picsum.photos/seed/velocity/800/400')] bg-cover bg-center" data-ai-hint="data analysis">
             <div className="w-full h-full bg-background/80 backdrop-blur-sm flex items-center justify-center p-8">
               <div className="text-center space-y-4">
                 <Clock className="h-10 w-10 text-primary mx-auto animate-pulse" />
