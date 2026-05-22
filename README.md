@@ -659,7 +659,7 @@ This is a workspace for sales managers to approve or decline discount requests. 
 
 ![Fig 9: Discount Approval Inbox](image%206.png)
 
-Fig 9: Discount Approval Inbox
+Fig 7: Discount Approval Inbox
 
 ### Goal
 
