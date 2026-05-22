@@ -37,16 +37,20 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { SALES_REPS } from "@/lib/data"
+import { SALES_REPS, OPPORTUNITIES, CONTACTS, CUSTOMERS, ACTIVITIES } from "@/lib/data"
 
 export default function SalesRepresentativeHub() {
   const { toast } = useToast()
   const [isActivityOpen, setIsActivityOpen] = React.useState(false)
 
-  // Use Allison Hill (SR001) as the representative view
+  // Use SR001 - Allison Hill as primary view
   const currentUser = SALES_REPS[0];
   const quotaPercent = (currentUser.achievement / currentUser.target) * 100;
   const remaining = Math.max(0, currentUser.target - currentUser.achievement);
+
+  // Data mapping for Allison
+  const userOpps = OPPORTUNITIES.slice(0, 4); // Show some deals
+  const userContacts = CONTACTS.slice(0, 5); // Show some contacts
 
   const handleLogActivity = (e: React.FormEvent) => {
     e.preventDefault()
@@ -105,9 +109,9 @@ export default function SalesRepresentativeHub() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "My Quota", value: `${quotaPercent.toFixed(1)}%`, sub: `$${remaining.toLocaleString()} remaining`, icon: Target, color: "text-accent" },
-          { label: "Active Deals", value: "14", sub: `$${currentUser.achievement.toLocaleString()} achievement`, icon: Layers, color: "text-primary" },
+          { label: "Active Deals", value: userOpps.length.toString(), sub: `$${currentUser.achievement.toLocaleString()} achievement`, icon: Layers, color: "text-primary" },
           { label: "Performance Score", value: currentUser.score.toString(), sub: `Region: ${currentUser.region}`, icon: TrendingUp, color: "text-accent" },
-          { label: "Tasks Due", value: "8", sub: "3 high priority", icon: Clock, color: "text-primary" },
+          { label: "Recent Activities", value: ACTIVITIES.length.toString(), sub: "Last 7 days", icon: Clock, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -126,33 +130,29 @@ export default function SalesRepresentativeHub() {
         <Card className="lg:col-span-2 border-border/50 bg-card/30">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-headline">Pipeline Opportunities</CardTitle>
-              <CardDescription>Highest probability deals in your current cycle.</CardDescription>
+              <CardTitle className="text-lg font-headline">Top Opportunities</CardTitle>
+              <CardDescription>High-value deals currently in your pipeline.</CardDescription>
             </div>
             <Button variant="ghost" size="sm" className="text-xs text-accent" asChild>
-              <Link href="/pipeline">View All</Link>
+              <Link href="/pipeline">View Pipeline</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {[
-              { name: "Omni-Channel Expansion", company: "RetailEdge", value: 120000, prob: 65, stage: "Proposal" },
-              { name: "Global ERP Rollout", company: "LogiTrans", value: 850000, prob: 40, stage: "Discovery" },
-              { name: "Security Audit Suite", company: "SafeGuard", value: 45000, prob: 95, stage: "Closing" },
-            ].map((deal, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:border-primary/30 transition-all cursor-pointer">
+            {userOpps.map((opp) => (
+              <div key={opp.id} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:border-primary/30 transition-all cursor-pointer">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold">{deal.name}</h4>
-                    <Badge variant="outline" className="text-[9px] h-4 border-none bg-muted">{deal.stage}</Badge>
+                    <h4 className="text-sm font-bold">{opp.product}</h4>
+                    <Badge variant="outline" className="text-[9px] h-4 border-none bg-muted">{opp.stage}</Badge>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                    <span className="font-code text-accent">${(deal.value / 1000).toFixed(0)}k</span>
-                    <span>{deal.company}</span>
+                    <span className="font-code text-accent">${(opp.value / 1000).toFixed(0)}k</span>
+                    <span>{CUSTOMERS.find(c => c.id === opp.customerId)?.name}</span>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="text-[10px] font-bold uppercase">{deal.prob}% Prob.</span>
-                  <Progress value={deal.prob} className="h-1 w-20 bg-secondary" />
+                  <span className="text-[10px] font-bold uppercase">{opp.probability}% Prob.</span>
+                  <Progress value={opp.probability} className="h-1 w-20 bg-secondary" />
                 </div>
               </div>
             ))}
@@ -164,19 +164,15 @@ export default function SalesRepresentativeHub() {
             <CardTitle className="text-lg font-headline">Recent Contacts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {[
-              { name: "Sarah Jenkins", role: "CTO, CyberDyne", avatar: "1" },
-              { name: "Marcus Thorne", role: "Manager, Aether", avatar: "2" },
-              { name: "Elena Rodriguez", role: "VP Sales, Zenith", avatar: "3" },
-            ].map((contact, i) => (
-              <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer group">
+            {userContacts.map((contact) => (
+              <div key={contact.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer group">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={`https://picsum.photos/seed/${contact.avatar}/100/100`} />
+                  <AvatarImage src={`https://picsum.photos/seed/${contact.id}/100/100`} />
                   <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 overflow-hidden">
                   <div className="text-xs font-bold truncate">{contact.name}</div>
-                  <div className="text-[10px] text-muted-foreground truncate">{contact.role}</div>
+                  <div className="text-[10px] text-muted-foreground truncate">{contact.jobTitle}</div>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button variant="ghost" size="icon" className="h-7 w-7"><Mail className="h-3.5 w-3.5" /></Button>

@@ -19,6 +19,37 @@ export type Customer = {
   satisfaction: number;
 };
 
+export type Contact = {
+  id: string;
+  customerId: string;
+  name: string;
+  email: string;
+  phone: string;
+  jobTitle: string;
+  lastInteraction: string;
+};
+
+export type SalesActivity = {
+  id: string;
+  repId: string;
+  customerId: string;
+  type: string;
+  date: string;
+  status: string;
+  notes: string;
+};
+
+export type Opportunity = {
+  id: string;
+  customerId: string;
+  repId: string;
+  product: string;
+  stage: string;
+  value: number;
+  closeDate: string;
+  probability: number;
+};
+
 export const SALES_REPS: SalesRep[] = [
   { id: "SR001", name: "Allison Hill", region: "North", target: 56556, achievement: 92097, score: 69.8 },
   { id: "SR002", name: "Noah Rhodes", region: "South", target: 76868, achievement: 162964, score: 63.48 },
@@ -298,4 +329,57 @@ export const CUSTOMERS: Customer[] = [
   { id: "CUST0248", name: "Davis, Burton and Williams", industry: "Manufacturing", region: "South", revenue: 3707688, since: "2025-02-04", manager: "Dylan Miller", satisfaction: 4.7 },
   { id: "CUST0249", name: "Johnson-Diaz", industry: "Retail", region: "East", revenue: 3904224, since: "2019-07-04", manager: "Lisa Hensley", satisfaction: 3.5 },
   { id: "CUST0250", name: "Browning LLC", industry: "IT", region: "East", revenue: 3679955, since: "2024-09-29", manager: "Monica Herrera", satisfaction: 4.2 }
+];
+
+export const CONTACTS: Contact[] = [
+  { id: "CONT0001", customerId: "CUST0096", name: "Curtis Buchanan", email: "maria47@yahoo.com", phone: "001-517-123-6851x6048", jobTitle: "Community pharmacist", lastInteraction: "2025-11-13" },
+  { id: "CONT0002", customerId: "CUST0245", name: "Paul Baker", email: "daniel37@gmail.com", phone: "+1-859-317-4612x004", jobTitle: "Research officer, government", lastInteraction: "2025-07-05" },
+  { id: "CONT0003", customerId: "CUST0040", name: "Stephen Taylor", email: "ellen86@hotmail.com", phone: "001-261-796-4053x7735", jobTitle: "Child psychotherapist", lastInteraction: "2026-02-11" },
+  { id: "CONT0004", customerId: "CUST0176", name: "Steven Newman", email: "hhill@davis-lewis.org", phone: "0532931839", jobTitle: "Engineer, technical sales", lastInteraction: "2026-04-01" },
+  { id: "CONT0005", customerId: "CUST0237", name: "Erin Hernandez", email: "michele22@king.com", phone: "(053)950-2402", jobTitle: "Pharmacist, community", lastInteraction: "2025-12-11" },
+  { id: "CONT0006", customerId: "CUST0122", name: "Arthur West", email: "hayesjeffrey@hotmail.com", phone: "8470076617", jobTitle: "Producer, radio", lastInteraction: "2025-06-18" },
+  { id: "CONT0007", customerId: "CUST0018", name: "Erica Hernandez", email: "claudia98@nguyen.info", phone: "961.183.6736x57661", jobTitle: "Intelligence analyst", lastInteraction: "2025-11-02" },
+  { id: "CONT0008", customerId: "CUST0024", name: "David Mckay", email: "davischristopher@yahoo.com", phone: "528-098-8516", jobTitle: "Manufacturing systems engineer", lastInteraction: "2026-04-25" },
+  { id: "CONT0009", customerId: "CUST0213", name: "Nicole Parrish", email: "caroline51@romero.com", phone: "(851)493-6899x809", jobTitle: "Geologist, engineering", lastInteraction: "2025-06-01" },
+  { id: "CONT0010", customerId: "CUST0022", name: "Michael Parker", email: "adam29@hotmail.com", phone: "(120)183-6675x2545", jobTitle: "Tax inspector", lastInteraction: "2026-01-07" },
+  { id: "CONT0011", customerId: "CUST0024", name: "Anthony Moore", email: "nelsonebony@lawson-perry.com", phone: "001-815-614-9784x03690", jobTitle: "Actor", lastInteraction: "2025-08-08" },
+  { id: "CONT0012", customerId: "CUST0111", name: "Daniel Taylor", email: "mark07@hotmail.com", phone: "(226)838-8516x06071", jobTitle: "Intelligence analyst", lastInteraction: "2025-12-30" },
+  { id: "CONT0013", customerId: "CUST0025", name: "Jared Bowman", email: "sullivantammy@gmail.com", phone: "+1-751-613-6968x164", jobTitle: "Librarian, academic", lastInteraction: "2025-08-15" },
+  { id: "CONT0014", customerId: "CUST0191", name: "Christopher Dixon", email: "rebeccabailey@mullen.com", phone: "(432)921-2779", jobTitle: "TEFL teacher", lastInteraction: "2025-11-11" },
+  { id: "CONT0015", customerId: "CUST0190", name: "Sonia Day", email: "edward17@yahoo.com", phone: "+1-449-058-1477x0054", jobTitle: "Camera operator", lastInteraction: "2026-01-26" }
+];
+
+export const ACTIVITIES: SalesActivity[] = [
+  { id: "ACT00001", repId: "SR023", customerId: "CUST0022", type: "Follow-up", date: "2025-12-26", status: "In Progress", notes: "Whole today Congress out conference never song but." },
+  { id: "ACT00002", repId: "SR002", customerId: "CUST0064", type: "Demo", date: "2024-08-29", status: "Pending", notes: "Deal claim none surface alone woman media hair name institution war a feel." },
+  { id: "ACT00003", repId: "SR017", customerId: "CUST0134", type: "Follow-up", date: "2025-06-28", status: "In Progress", notes: "Process knowledge officer reason mission worry goal Mrs decide." },
+  { id: "ACT00004", repId: "SR012", customerId: "CUST0096", type: "Email", date: "2024-08-05", status: "Pending", notes: "Down could feel strategy whatever own." },
+  { id: "ACT00005", repId: "SR014", customerId: "CUST0199", type: "Email", date: "2024-11-04", status: "Open", notes: "Grow campaign performance avoid effort high tough hundred bar effect international reason movie." },
+  { id: "ACT00011", repId: "SR020", customerId: "CUST0182", type: "Call", date: "2025-09-29", status: "Completed", notes: "Religious eat participant religious consumer worry sometimes maybe every into." },
+  { id: "ACT00014", repId: "SR021", customerId: "CUST0172", type: "Demo", date: "2026-05-15", status: "Completed", notes: "Look middle your thousand recently if pattern." },
+  { id: "ACT00030", repId: "SR009", customerId: "CUST0014", type: "Demo", date: "2026-02-09", status: "Completed", notes: "Sea open painting draw every once beautiful blood picture own." },
+  { id: "ACT00032", repId: "SR010", customerId: "CUST0022", type: "Meeting", date: "2024-08-28", status: "Completed", notes: "Industry represent through service suffer night girl hand." }
+];
+
+export const OPPORTUNITIES: Opportunity[] = [
+  { id: "OPP0001", customerId: "CUST0233", repId: "SR014", product: "Sales Booster", stage: "Qualified", value: 485830, closeDate: "2026-07-30", probability: 30 },
+  { id: "OPP0002", customerId: "CUST0018", repId: "SR011", product: "Sales Booster", stage: "Closed Won", value: 382194, closeDate: "2026-08-29", probability: 25 },
+  { id: "OPP0003", customerId: "CUST0082", repId: "SR006", product: "CRM Suite", stage: "Qualified", value: 406308, closeDate: "2026-09-16", probability: 50 },
+  { id: "OPP0004", customerId: "CUST0247", repId: "SR014", product: "CloudSync", stage: "Negotiation", value: 237261, closeDate: "2026-06-20", probability: 91 },
+  { id: "OPP0005", customerId: "CUST0071", repId: "SR024", product: "Analytics Pro", stage: "Qualified", value: 60978, closeDate: "2026-08-11", probability: 26 },
+  { id: "OPP0006", customerId: "CUST0007", repId: "SR006", product: "Sales Booster", stage: "Closed Won", value: 144912, closeDate: "2026-08-25", probability: 87 },
+  { id: "OPP0007", customerId: "CUST0157", repId: "SR019", product: "Sales Booster", stage: "Qualified", value: 126730, closeDate: "2027-01-06", probability: 39 },
+  { id: "OPP0008", customerId: "CUST0007", repId: "SR022", product: "CRM Suite", stage: "Proposal", value: 365784, closeDate: "2026-09-25", probability: 71 },
+  { id: "OPP0009", customerId: "CUST0129", repId: "SR005", product: "AI Assistant", stage: "Closed Won", value: 378303, closeDate: "2026-09-18", probability: 93 },
+  { id: "OPP0010", customerId: "CUST0048", repId: "SR012", product: "AI Assistant", stage: "Negotiation", value: 253432, closeDate: "2026-11-09", probability: 27 },
+  { id: "OPP0011", customerId: "CUST0050", repId: "SR006", product: "CRM Suite", stage: "Qualified", value: 219218, closeDate: "2026-12-28", probability: 11 },
+  { id: "OPP0012", customerId: "CUST0244", repId: "SR009", product: "Analytics Pro", stage: "Negotiation", value: 394213, closeDate: "2026-09-02", probability: 95 },
+  { id: "OPP0013", customerId: "CUST0194", repId: "SR007", product: "CRM Suite", stage: "Qualified", value: 97839, closeDate: "2026-06-12", probability: 66 },
+  { id: "OPP0014", customerId: "CUST0126", repId: "SR020", product: "CloudSync", stage: "Closed Lost", value: 459439, closeDate: "2027-02-21", probability: 68 },
+  { id: "OPP0015", customerId: "CUST0110", repId: "SR008", product: "CRM Suite", stage: "Negotiation", value: 323730, closeDate: "2026-10-14", probability: 58 },
+  { id: "OPP0016", customerId: "CUST0081", repId: "SR024", product: "Sales Booster", stage: "Negotiation", value: 497379, closeDate: "2026-09-01", probability: 83 },
+  { id: "OPP0017", customerId: "CUST0138", repId: "SR020", product: "CRM Suite", stage: "Closed Won", value: 277970, closeDate: "2027-03-02", probability: 23 },
+  { id: "OPP0018", customerId: "CUST0117", repId: "SR015", product: "Analytics Pro", stage: "Prospecting", value: 276949, closeDate: "2027-03-07", probability: 78 },
+  { id: "OPP0019", customerId: "CUST0189", repId: "SR013", product: "Sales Booster", stage: "Prospecting", value: 208108, closeDate: "2026-10-10", probability: 76 },
+  { id: "OPP0020", customerId: "CUST0162", repId: "SR025", product: "Analytics Pro", stage: "Prospecting", value: 157661, closeDate: "2026-08-13", probability: 66 }
 ];
