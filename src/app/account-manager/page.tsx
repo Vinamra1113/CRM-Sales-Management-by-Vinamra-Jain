@@ -11,7 +11,9 @@ import {
   Calendar, 
   AlertTriangle,
   FileText,
-  Star
+  Star,
+  Plus,
+  Target
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -25,15 +27,42 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { ACCOUNT_PLANS, RENEWALS, CUSTOMERS } from "@/lib/data"
 
 export default function AccountManagerHub() {
   const { toast } = useToast()
+  const [mounted, setMounted] = React.useState(false)
 
-  const avgHealth = (CUSTOMERS.reduce((acc, c) => acc + c.satisfaction, 0) / CUSTOMERS.length).toFixed(1);
-  const pendingRenewals = RENEWALS.filter(r => r.status === 'Pending').length;
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const avgHealth = React.useMemo(() => {
+    if (!mounted) return "0.0"
+    return (CUSTOMERS.reduce((acc, c) => acc + c.satisfaction, 0) / CUSTOMERS.length).toFixed(1)
+  }, [mounted])
+
+  const pendingRenewalsCount = React.useMemo(() => {
+    if (!mounted) return "0"
+    return RENEWALS.filter(r => r.status === 'Pending').length.toString()
+  }, [mounted])
+
+  if (!mounted) return null
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
@@ -55,7 +84,7 @@ export default function AccountManagerHub() {
                 <SheetDescription>Overview of active growth strategies for your primary book of business.</SheetDescription>
               </SheetHeader>
               <div className="py-6 space-y-6">
-                {ACCOUNT_PLANS.map((plan) => (
+                {ACCOUNT_PLANS.slice(0, 10).map((plan) => (
                   <div key={plan.id} className="space-y-2 p-4 rounded-lg border bg-card">
                     <div className="flex justify-between items-center">
                       <span className="font-bold">{CUSTOMERS.find(c => c.id === plan.customerId)?.name || "Unknown"}</span>
@@ -65,7 +94,44 @@ export default function AccountManagerHub() {
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Review: {plan.reviewDate}</div>
                   </div>
                 ))}
-                <Button className="w-full" onClick={() => toast({ title: "New Plan Drafted", description: "Select an account to finalize details." })}>Create New Plan</Button>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full">Create New Plan</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>New Strategic Plan</DialogTitle>
+                      <DialogDescription>Draft a growth strategy for an existing account.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label>Account</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Customer" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CUSTOMERS.slice(0, 10).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Growth Goal</Label>
+                        <Textarea placeholder="Describe the primary expansion objective..." />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Target Expansion Revenue</Label>
+                        <Input type="number" placeholder="50000" />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => toast({ title: "Plan Saved", description: "Strategic goal has been synchronized with the account ledger." })}>Finalize Plan</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </SheetContent>
           </Sheet>
@@ -81,7 +147,7 @@ export default function AccountManagerHub() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Avg Health Score", value: avgHealth, sub: "Across all accounts", icon: HeartPulse, color: "text-accent" },
-          { label: "Pending Renewals", value: pendingRenewals.toString(), sub: "Requiring attention", icon: Calendar, color: "text-primary" },
+          { label: "Pending Renewals", value: pendingRenewalsCount, sub: "Requiring attention", icon: Calendar, color: "text-primary" },
           { label: "Churn Risk", value: "Low", sub: "Based on sentiment", icon: AlertTriangle, color: "text-destructive" },
           { label: "Active Plans", value: ACCOUNT_PLANS.length.toString(), sub: "Growth strategies", icon: Smile, color: "text-accent" },
         ].map((kpi, i) => (
@@ -106,7 +172,7 @@ export default function AccountManagerHub() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
-              {RENEWALS.map((rel) => {
+              {RENEWALS.slice(0, 8).map((rel) => {
                 const customer = CUSTOMERS.find(c => c.id === rel.customerId);
                 return (
                   <div key={rel.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-all cursor-pointer">
@@ -120,7 +186,7 @@ export default function AccountManagerHub() {
                     <div className="text-right">
                       <div className="text-xs font-bold text-foreground">Reminder: {rel.reminderDate}</div>
                       <Badge variant="outline" className={cn(
-                        "text-[8px] h-4 border-none",
+                        "text-[9px] h-4 border-none",
                         rel.status === "Renewed" ? "bg-green-500/10 text-green-500" :
                         rel.status === "Pending" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
                       )}>{rel.status}</Badge>
@@ -133,8 +199,41 @@ export default function AccountManagerHub() {
         </Card>
 
         <Card className="border-border/50 bg-card/30">
-          <CardHeader>
-            <CardTitle className="text-lg font-headline">Recent Interaction Logs</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg font-headline">Interaction Logs</CardTitle>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="icon" variant="ghost" className="h-8 w-8"><Plus className="h-4 w-4" /></Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Log Strategic Note</DialogTitle>
+                  <DialogDescription>Record high-level context for account governance.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label>Account</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CUSTOMERS.slice(0, 10).map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Note Context</Label>
+                    <Textarea placeholder="Key takeaways from the QBR or stakeholder sync..." />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => toast({ title: "Interaction Logged", description: "Note added to strategic account timeline." })}>Save Log</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardHeader>
           <CardContent className="space-y-4">
             {[

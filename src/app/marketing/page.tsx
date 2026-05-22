@@ -18,16 +18,43 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { CAMPAIGNS, LEADS, SALES_REPS } from "@/lib/data"
+import { CAMPAIGNS, LEADS } from "@/lib/data"
 
 export default function MarketingHub() {
   const { toast } = useToast()
+  const [mounted, setMounted] = React.useState(false)
 
-  const avgROI = (CAMPAIGNS.reduce((acc, c) => acc + c.roi, 0) / CAMPAIGNS.length).toFixed(2);
-  const totalLeads = LEADS.length;
-  const qualifiedLeads = LEADS.filter(l => l.status === "Qualified").length;
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const stats = React.useMemo(() => {
+    if (!mounted) return { avgROI: "0.00", totalLeads: "0", qualifiedLeads: "0", qualRate: "0" }
+    const roiSum = CAMPAIGNS.reduce((acc, c) => acc + c.roi, 0);
+    const qualifiedCount = LEADS.filter(l => l.status === "Qualified").length;
+    return {
+      avgROI: (roiSum / CAMPAIGNS.length).toFixed(2),
+      totalLeads: LEADS.length.toString(),
+      qualifiedLeads: qualifiedCount.toString(),
+      qualRate: ((qualifiedCount / LEADS.length) * 100).toFixed(0)
+    }
+  }, [mounted])
+
+  if (!mounted) return null
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
@@ -37,21 +64,59 @@ export default function MarketingHub() {
           <p className="text-muted-foreground">Campaign performance monitoring and lead distribution orchestration.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Synchronized", description: `${qualifiedLeads} verified leads pushed to Sales Representative Hubs.` })}>
+          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Synchronized", description: `${stats.qualifiedLeads} verified leads pushed to Sales Representative Hubs.` })}>
             <Send className="h-4 w-4" /> Distribute Leads
           </Button>
-          <Button className="bg-primary gap-2">
-            <Plus className="h-4 w-4" /> New Campaign
-          </Button>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-primary gap-2">
+                <Plus className="h-4 w-4" /> New Campaign
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Launch New Campaign</DialogTitle>
+                <DialogDescription>Initialize a multi-channel demand generation program.</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label>Campaign Name</Label>
+                  <Input placeholder="e.g. Q4 CloudSync Push" />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Channel</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Channel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="webinar">Webinar</SelectItem>
+                      <SelectItem value="social">Social Media</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="paid">Paid Ads</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Budget Allocation</Label>
+                  <Input type="number" placeholder="25000" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => toast({ title: "Campaign Initialized", description: "Program metrics tracking is now live in the Portfolio." })}>Launch Program</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Portfolio ROI", value: `${avgROI}x`, sub: "Avg across 80 campaigns", icon: TrendingUp, color: "text-accent" },
-          { label: "Qualified Pipeline", value: qualifiedLeads.toString(), sub: `${((qualifiedLeads/totalLeads)*100).toFixed(0)}% Qualification Rate`, icon: Zap, color: "text-primary" },
+          { label: "Portfolio ROI", value: `${stats.avgROI}x`, sub: "Avg across 80 campaigns", icon: TrendingUp, color: "text-accent" },
+          { label: "Qualified Pipeline", value: stats.qualifiedLeads, sub: `${stats.qualRate}% Qualification Rate`, icon: Zap, color: "text-primary" },
           { label: "Campaign Count", value: CAMPAIGNS.length.toString(), sub: "Active across 5 channels", icon: Globe, color: "text-accent" },
-          { label: "Lead Volume", value: totalLeads.toString(), sub: "Gross generated MTD", icon: MessageSquare, color: "text-primary" },
+          { label: "Lead Volume", value: stats.totalLeads, sub: "Gross generated MTD", icon: MessageSquare, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

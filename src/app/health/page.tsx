@@ -24,26 +24,37 @@ import { cn } from "@/lib/utils"
 import { CUSTOMERS } from "@/lib/data"
 
 export default function GrowthHealthTracker() {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const avgSatisfaction = React.useMemo(() => {
-    return (CUSTOMERS.reduce((acc, c) => acc + c.satisfaction, 0) / CUSTOMERS.length).toFixed(1);
-  }, []);
+    if (!mounted) return "0.0"
+    return (CUSTOMERS.reduce((acc, c) => acc + c.satisfaction, 0) / CUSTOMERS.length).toFixed(1)
+  }, [mounted])
 
   const segments = React.useMemo(() => {
-    const promoters = CUSTOMERS.filter(c => c.satisfaction >= 4.5).length;
-    const passives = CUSTOMERS.filter(c => c.satisfaction >= 3.5 && c.satisfaction < 4.5).length;
-    const detractors = CUSTOMERS.length - promoters - passives;
+    if (!mounted) return { promoters: 0, passives: 0, detractors: 0, counts: { promoters: 0, passives: 0, detractors: 0 } }
+    const promotersCount = CUSTOMERS.filter(c => c.satisfaction >= 4.5).length;
+    const passivesCount = CUSTOMERS.filter(c => c.satisfaction >= 3.5 && c.satisfaction < 4.5).length;
+    const detractorsCount = CUSTOMERS.length - promotersCount - passivesCount;
     
     return {
-      promoters: Math.round((promoters / CUSTOMERS.length) * 100),
-      passives: Math.round((passives / CUSTOMERS.length) * 100),
-      detractors: Math.round((detractors / CUSTOMERS.length) * 100),
-      counts: { promoters, passives, detractors }
+      promoters: Math.round((promotersCount / CUSTOMERS.length) * 100),
+      passives: Math.round((passivesCount / CUSTOMERS.length) * 100),
+      detractors: Math.round((detractorsCount / CUSTOMERS.length) * 100),
+      counts: { promoters: promotersCount, passives: passivesCount, detractors: detractorsCount }
     }
-  }, []);
+  }, [mounted])
 
   const atRiskAccounts = React.useMemo(() => {
-    return CUSTOMERS.filter(c => c.satisfaction < 3.0).slice(0, 5);
-  }, []);
+    if (!mounted) return []
+    return CUSTOMERS.filter(c => c.satisfaction < 3.0).slice(0, 5)
+  }, [mounted])
+
+  if (!mounted) return null
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
