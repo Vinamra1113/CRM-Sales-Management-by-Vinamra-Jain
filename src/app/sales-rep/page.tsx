@@ -9,14 +9,11 @@ import {
   TrendingUp, 
   Plus, 
   ArrowRight, 
-  DollarSign, 
-  Clock, 
-  Target,
-  Search,
-  Mail,
-  Phone,
   MessageSquare,
-  Activity as ActivityIcon
+  Activity as ActivityIcon,
+  Target,
+  Mail,
+  Phone
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -36,19 +33,22 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, addDoc } from "firebase/firestore"
 import { SALES_REPS, OPPORTUNITIES, CONTACTS, CUSTOMERS, SALES_ACTIVITIES } from "@/lib/data"
 
 export default function SalesRepresentativeHub() {
   const { toast } = useToast()
+  const db = useFirestore()
+  const { data: activities = [] } = useCollection<any>(db ? collection(db, "activities") : null)
   const [isActivityOpen, setIsActivityOpen] = React.useState(false)
 
-  // SR001 - Allison Hill
-  const currentUser = SALES_REPS[0];
+  const currentUser = SALES_REPS[0]; // SR001 Allison Hill
   const quotaPercent = (currentUser.achievement / currentUser.target) * 100;
-  const remaining = Math.max(0, currentUser.target - currentUser.achievement);
-
+  
   const userOpps = OPPORTUNITIES.filter(o => o.repId === currentUser.id);
   const totalPipelineValue = userOpps.reduce((sum, o) => sum + o.value, 0);
   
@@ -57,15 +57,25 @@ export default function SalesRepresentativeHub() {
     return customer?.manager === currentUser.name;
   }).slice(0, 5);
 
-  const userActivities = SALES_ACTIVITIES.filter(a => a.repId === currentUser.id);
-
-  const handleLogActivity = (e: React.FormEvent) => {
+  const handleLogActivity = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsActivityOpen(false)
-    toast({
-      title: "Activity Logged",
-      description: "Interaction successfully synchronized to account timeline.",
-    })
+    if (!db) return
+
+    const formData = new FormData(e.currentTarget)
+    try {
+      await addDoc(collection(db, "activities"), {
+        repId: currentUser.id,
+        customerId: formData.get("customerId"),
+        type: formData.get("type"),
+        notes: formData.get("notes"),
+        date: new Date().toISOString().split('T')[0],
+        status: "Completed"
+      })
+      setIsActivityOpen(false)
+      toast({ title: "Activity Logged", description: "Interaction synced to account timeline." })
+    } catch (err) {
+      toast({ title: "Log Failed", variant: "destructive" })
+    }
   }
 
   return (
@@ -86,16 +96,39 @@ export default function SalesRepresentativeHub() {
               <form onSubmit={handleLogActivity}>
                 <DialogHeader>
                   <DialogTitle>Sales Activity Log</DialogTitle>
-                  <DialogDescription>Record details from your latest client meeting or call.</DialogDescription>
+                  <DialogDescription>Record details from your latest client meeting.</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="Q3 Strategy Review" required />
+                    <Label>Customer</Label>
+                    <Select name="customerId" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CUSTOMERS.slice(0, 20).map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="notes">Meeting Notes</Label>
-                    <Textarea id="notes" placeholder="Key takeaways and action items..." required />
+                    <Label>Type</Label>
+                    <Select name="type" required defaultValue="Call">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Call">Call</SelectItem>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Meeting">Meeting</SelectItem>
+                        <SelectItem value="Demo">Demo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Notes</Label>
+                    <Textarea name="notes" placeholder="Key takeaways..." required />
                   </div>
                 </div>
                 <DialogFooter>
@@ -115,9 +148,9 @@ export default function SalesRepresentativeHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Quota Attainment", value: `${quotaPercent.toFixed(1)}%`, sub: `$${remaining.toLocaleString()} to goal`, icon: Target, color: "text-accent" },
+          { label: "Quota Attainment", value: `${quotaPercent.toFixed(1)}%`, sub: "MTD Progress", icon: Target, color: "text-accent" },
           { label: "Pipeline Value", value: `$${(totalPipelineValue / 1000).toFixed(0)}k`, sub: `${userOpps.length} active deals`, icon: Layers, color: "text-primary" },
-          { label: "Activity Velocity", value: userActivities.length.toString(), sub: "Last 30 days", icon: ActivityIcon, color: "text-accent" },
+          { label: "Logged Activities", value: activities.length > 0 ? activities.length.toString() : SALES_ACTIVITIES.length.toString(), sub: "Lifetime count", icon: ActivityIcon, color: "text-accent" },
           { label: "Monthly Target", value: `$${currentUser.target.toLocaleString()}`, sub: "Revised Jan 1", icon: TrendingUp, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl shadow-black/5">
@@ -169,7 +202,7 @@ export default function SalesRepresentativeHub() {
         <Card className="border-border/50 bg-card/30">
           <CardHeader>
             <CardTitle className="text-lg font-headline">Stakeholder Ledger</CardTitle>
-            <CardDescription>Direct contacts for your managed accounts.</CardDescription>
+            <CardDescription>Direct contacts for managed accounts.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {userContacts.map((contact) => (
@@ -189,7 +222,7 @@ export default function SalesRepresentativeHub() {
               </div>
             ))}
             <Button variant="outline" className="w-full text-xs font-bold mt-2" asChild>
-              <Link href="/customers">Open Universal Ledger</Link>
+              <Link href="/customers">Universal Ledger</Link>
             </Button>
           </CardContent>
         </Card>

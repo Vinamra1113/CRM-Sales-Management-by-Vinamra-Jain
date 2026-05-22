@@ -1,0 +1,181 @@
+
+{
+  "entities": {
+    "SalesRep": {
+      "title": "Sales Representative",
+      "description": "Internal sales team members",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "region": { "type": "string" },
+        "target": { "type": "number" },
+        "achievement": { "type": "number" },
+        "score": { "type": "number" }
+      },
+      "required": ["name", "region"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Enterprise client accounts",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "industry": { "type": "string" },
+        "region": { "type": "string" },
+        "revenue": { "type": "number" },
+        "since": { "type": "string", "format": "date" },
+        "manager": { "type": "string" },
+        "satisfaction": { "type": "number" }
+      },
+      "required": ["name", "industry", "region"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Individual stakeholders at customer accounts",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "lastInteraction": { "type": "string", "format": "date" }
+      },
+      "required": ["customerId", "name", "email"]
+    },
+    "SalesActivity": {
+      "title": "Sales Activity",
+      "description": "Logged interactions with clients",
+      "type": "object",
+      "properties": {
+        "repId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "type": { "type": "string", "enum": ["Call", "Email", "Meeting", "Demo", "Follow-up"] },
+        "date": { "type": "string", "format": "date" },
+        "status": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["repId", "customerId", "type", "date"]
+    },
+    "Opportunity": {
+      "title": "Opportunity",
+      "description": "Potential sales deals",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "repId": { "type": "string" },
+        "product": { "type": "string" },
+        "stage": { "type": "string", "enum": ["Prospecting", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"] },
+        "value": { "type": "number" },
+        "closeDate": { "type": "string", "format": "date" },
+        "probability": { "type": "number" }
+      },
+      "required": ["customerId", "product", "stage", "value"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Marketing outreach programs",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "budget": { "type": "number" },
+        "leadsGenerated": { "type": "number" },
+        "roi": { "type": "number" }
+      },
+      "required": ["name", "type", "budget"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Inbound prospects for sales follow-up",
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "assignedRep": { "type": "string" },
+        "score": { "type": "number" },
+        "status": { "type": "string", "enum": ["New", "Contacted", "Qualified", "Converted"] },
+        "date": { "type": "string", "format": "date" }
+      },
+      "required": ["source", "status"]
+    },
+    "DiscountRequest": {
+      "title": "Discount Request",
+      "description": "Price variation approvals",
+      "type": "object",
+      "properties": {
+        "repName": { "type": "string" },
+        "customerId": { "type": "string" },
+        "percent": { "type": "number" },
+        "status": { "type": "string", "enum": ["Approved", "Pending", "Rejected"] },
+        "date": { "type": "string", "format": "date" }
+      },
+      "required": ["repName", "customerId", "percent", "status"]
+    },
+    "AccountPlan": {
+      "title": "Account Plan",
+      "description": "Strategic growth plans for accounts",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "goal": { "type": "string" },
+        "targetRevenue": { "type": "number" },
+        "reviewDate": { "type": "string", "format": "date" }
+      },
+      "required": ["customerId", "goal"]
+    },
+    "Renewal": {
+      "title": "Renewal",
+      "description": "Contract lifecycle tracking",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "endDate": { "type": "string", "format": "date" },
+        "reminderDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["Pending", "Renewed", "Upcoming"] }
+      },
+      "required": ["customerId", "endDate", "status"]
+    },
+    "Feedback": {
+      "title": "Customer Feedback",
+      "description": "User reported insights",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "product": { "type": "string" },
+        "category": { "type": "string", "enum": ["Performance", "Bug", "Usability", "Feature"] },
+        "text": { "type": "string" },
+        "satisfaction": { "type": "string" }
+      },
+      "required": ["customerId", "product", "category"]
+    },
+    "FeatureRequest": {
+      "title": "Feature Request",
+      "description": "Technical roadmap items",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "feature": { "type": "string" },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+        "status": { "type": "string", "enum": ["Backlog", "Planned", "In Development", "Released"] }
+      },
+      "required": ["customerId", "feature", "priority", "status"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/sales-reps/{id}": { "schema": { "$ref": "#/backend/entities/SalesRep" }, "description": "Sales team members" },
+    "/customers/{id}": { "schema": { "$ref": "#/backend/entities/Customer" }, "description": "Client accounts" },
+    "/contacts/{id}": { "schema": { "$ref": "#/backend/entities/Contact" }, "description": "Client stakeholders" },
+    "/activities/{id}": { "schema": { "$ref": "#/backend/entities/SalesActivity" }, "description": "Interaction logs" },
+    "/opportunities/{id}": { "schema": { "$ref": "#/backend/entities/Opportunity" }, "description": "Sales pipeline" },
+    "/campaigns/{id}": { "schema": { "$ref": "#/backend/entities/Campaign" }, "description": "Marketing campaigns" },
+    "/leads/{id}": { "schema": { "$ref": "#/backend/entities/Lead" }, "description": "Inbound leads" },
+    "/discounts/{id}": { "schema": { "$ref": "#/backend/entities/DiscountRequest" }, "description": "Discount approval workflow" },
+    "/account-plans/{id}": { "schema": { "$ref": "#/backend/entities/AccountPlan" }, "description": "Account growth strategies" },
+    "/renewals/{id}": { "schema": { "$ref": "#/backend/entities/Renewal" }, "description": "Contract renewals" },
+    "/feedback/{id}": { "schema": { "$ref": "#/backend/entities/Feedback" }, "description": "Product feedback" },
+    "/feature-requests/{id}": { "schema": { "$ref": "#/backend/entities/FeatureRequest" }, "description": "Product roadmap items" }
+  }
+}

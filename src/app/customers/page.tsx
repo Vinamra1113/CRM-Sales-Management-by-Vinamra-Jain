@@ -12,7 +12,9 @@ import {
   Star,
   Plus,
   Globe,
-  FileText
+  FileText,
+  Trash2,
+  Edit
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -28,19 +30,78 @@ import {
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { CUSTOMERS } from "@/lib/data"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore"
+import { useToast } from "@/hooks/use-toast"
+import { CUSTOMERS as INITIAL_DATA } from "@/lib/data"
 
 export default function CustomerLedger() {
-  const [search, setSearch] = React.useState("");
+  const { toast } = useToast()
+  const db = useFirestore()
+  const { data: customers = [], loading } = useCollection<any>(db ? collection(db, "customers") : null)
+  const [search, setSearch] = React.useState("")
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false)
+  const [editingCustomer, setEditingCustomer] = React.useState<any>(null)
 
   const filteredCustomers = React.useMemo(() => {
-    return CUSTOMERS.filter(c => 
+    const list = customers.length > 0 ? customers : INITIAL_DATA;
+    return list.filter(c => 
       c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.industry.toLowerCase().includes(search.toLowerCase()) ||
-      c.id.toLowerCase().includes(search.toLowerCase())
+      c.industry.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [search, customers]);
+
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!db) return
+    
+    const formData = new FormData(e.currentTarget)
+    const payload = {
+      name: formData.get("name") as string,
+      industry: formData.get("industry") as string,
+      region: formData.get("region") as string,
+      revenue: Number(formData.get("revenue")),
+      manager: formData.get("manager") as string,
+      satisfaction: 4.0,
+      since: new Date().toISOString().split('T')[0]
+    }
+
+    try {
+      if (editingCustomer) {
+        await updateDoc(doc(db, "customers", editingCustomer.id), payload)
+        toast({ title: "Customer Updated" })
+      } else {
+        await addDoc(collection(db, "customers"), payload)
+        toast({ title: "Customer Created" })
+      }
+      setIsCreateOpen(false)
+      setEditingCustomer(null)
+    } catch (err) {
+      toast({ title: "Error saving customer", variant: "destructive" })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!db) return
+    try {
+      await deleteDoc(doc(db, "customers", id))
+      toast({ title: "Customer Deleted" })
+    } catch (err) {
+      toast({ title: "Error deleting customer", variant: "destructive" })
+    }
+  }
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
@@ -50,12 +111,48 @@ export default function CustomerLedger() {
           <p className="text-muted-foreground">Unified registry of contacts and historical interaction logs.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2">
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
-          <Button className="bg-primary gap-2">
-            <Plus className="h-4 w-4" /> New Contact
-          </Button>
+          <Dialog open={isCreateOpen} onOpenChange={(o) => { setIsCreateOpen(o); if(!o) setEditingCustomer(null); }}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary gap-2">
+                <Plus className="h-4 w-4" /> New Contact
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleSave}>
+                <DialogHeader>
+                  <DialogTitle>{editingCustomer ? "Edit Customer" : "New Customer"}</DialogTitle>
+                  <DialogDescription>Enter the enterprise client details below.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label>Company Name</Label>
+                    <Input name="name" defaultValue={editingCustomer?.name} required placeholder="e.g. HOSHŌ Corp" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Industry</Label>
+                      <Input name="industry" defaultValue={editingCustomer?.industry} required placeholder="e.g. Tech" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Region</Label>
+                      <Input name="region" defaultValue={editingCustomer?.region} required placeholder="e.g. North" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Annual Revenue ($)</Label>
+                    <Input name="revenue" type="number" defaultValue={editingCustomer?.revenue} required placeholder="1000000" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Account Manager</Label>
+                    <Input name="manager" defaultValue={editingCustomer?.manager} required placeholder="e.g. Allison Hill" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Save Customer</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -63,19 +160,11 @@ export default function CustomerLedger() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search name, industry, or ID..." 
+            placeholder="Search name, industry..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-card/30 border-border/50 h-10" 
           />
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" className="bg-secondary/50 border border-border/50 gap-2">
-            <Filter className="h-4 w-4" /> Filter By Industry
-          </Button>
-          <Button variant="secondary" className="bg-secondary/50 border border-border/50 gap-2">
-            <Star className="h-4 w-4" /> Favorites
-          </Button>
         </div>
       </div>
 
@@ -85,9 +174,8 @@ export default function CustomerLedger() {
             <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
               <TableRow className="border-border/30 hover:bg-transparent">
                 <TableHead className="w-[300px]">Client / Contact</TableHead>
-                <TableHead>Health & Satisfaction</TableHead>
                 <TableHead>Industry / Region</TableHead>
-                <TableHead>Lifetime Value</TableHead>
+                <TableHead>Annual Revenue</TableHead>
                 <TableHead>Manager</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -108,46 +196,24 @@ export default function CustomerLedger() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-1">
-                        <Star className={cn("h-3 w-3", customer.satisfaction >= 4 ? "text-accent fill-accent" : "text-muted-foreground")} />
-                        <span className="text-xs font-bold">{customer.satisfaction} / 5.0</span>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "text-[9px] w-fit font-bold uppercase py-0 px-1.5 h-4 border-none",
-                          customer.satisfaction >= 4.5 ? "bg-green-500/10 text-green-500" :
-                          customer.satisfaction >= 3.5 ? "bg-accent/10 text-accent" :
-                          customer.satisfaction < 3.0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
-                        )}
-                      >
-                        {customer.satisfaction >= 4.5 ? "Excellent" : customer.satisfaction >= 3.5 ? "Good" : customer.satisfaction < 3.0 ? "At Risk" : "Average"}
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium opacity-70">{customer.industry}</span>
                       <span className="text-[10px] text-muted-foreground">{customer.region}</span>
                     </div>
                   </TableCell>
                   <TableCell className="font-code text-sm font-bold">
-                    ${customer.revenue.toLocaleString()}
+                    ${(customer.revenue || 0).toLocaleString()}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {customer.manager}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-accent">
-                        <Mail className="h-4 w-4" />
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setEditingCustomer(customer); setIsCreateOpen(true); }}>
+                        <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                        <History className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <ExternalLink className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(customer.id)}>
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -157,60 +223,6 @@ export default function CustomerLedger() {
           </Table>
         </div>
       </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-border/50 bg-card/30">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Recent Engagement Feed</CardTitle>
-            <Button variant="ghost" size="sm" className="text-xs font-bold text-accent">View All</Button>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { type: 'meeting', title: 'Onboarding Call', user: 'Sarah Jenkins', time: '2h ago', icon: Globe },
-              { type: 'email', title: 'Proposal Feedback', user: 'Marcus Thorne', time: '5h ago', icon: Mail },
-              { type: 'note', title: 'Internal Strategy Draft', user: 'Self', time: '1d ago', icon: FileText },
-            ].map((item, i) => (
-              <div key={i} className="flex gap-4 items-start p-3 rounded-lg border border-border/30 hover:border-primary/30 transition-all bg-card/40">
-                <div className="mt-1 p-2 rounded-md bg-secondary border border-border/50">
-                  <item.icon className="h-3.5 w-3.5 text-accent" />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{item.type}</span>
-                    <span className="text-[10px] text-muted-foreground font-code">{item.time}</span>
-                  </div>
-                  <h4 className="text-sm font-semibold">{item.title}</h4>
-                  <p className="text-[11px] text-muted-foreground">Contextual notes recorded for <span className="text-foreground/80 font-medium">{item.user}</span>.</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-card/30">
-          <CardHeader>
-            <CardTitle className="text-lg">Regional Market Share</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {['North', 'South', 'East', 'West', 'Central'].map(region => {
-              const regionCustomers = CUSTOMERS.filter(c => c.region === region);
-              const totalRevenue = regionCustomers.reduce((acc, c) => acc + c.revenue, 0);
-              const progress = (totalRevenue / 10000000) * 100; // Normalized for visualization
-              return (
-                <div key={region} className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold uppercase">
-                    <span>{region}</span>
-                    <span className="text-accent">${(totalRevenue / 1000000).toFixed(1)}M</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
-                  </div>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }

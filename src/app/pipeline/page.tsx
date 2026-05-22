@@ -9,10 +9,10 @@ import {
   Filter, 
   DollarSign, 
   Clock, 
-  User, 
   ArrowRight,
-  TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  Edit
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -26,8 +26,22 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { OPPORTUNITIES, CUSTOMERS, type Opportunity } from "@/lib/data"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore"
+import { useToast } from "@/hooks/use-toast"
+import { OPPORTUNITIES as INITIAL_DATA, CUSTOMERS } from "@/lib/data"
 
 const STAGE_CONFIG = [
   { id: "Prospecting", name: "Prospecting" },
@@ -38,16 +52,62 @@ const STAGE_CONFIG = [
 ]
 
 export default function VelocityPipeline() {
-  const [search, setSearch] = React.useState("");
+  const { toast } = useToast()
+  const db = useFirestore()
+  const { data: opportunities = [] } = useCollection<any>(db ? collection(db, "opportunities") : null)
+  const [search, setSearch] = React.useState("")
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+  const [editingOpp, setEditingOpp] = React.useState<any>(null)
 
   const getCustomerName = (id: string) => CUSTOMERS.find(c => c.id === id)?.name || "Unknown Client";
 
   const filteredOpps = React.useMemo(() => {
-    return OPPORTUNITIES.filter(opp => 
+    const list = opportunities.length > 0 ? opportunities : INITIAL_DATA;
+    return list.filter(opp => 
       opp.product.toLowerCase().includes(search.toLowerCase()) ||
       getCustomerName(opp.customerId).toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [search, opportunities]);
+
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!db) return
+    
+    const formData = new FormData(e.currentTarget)
+    const payload = {
+      product: formData.get("product") as string,
+      customerId: formData.get("customerId") as string,
+      value: Number(formData.get("value")),
+      stage: formData.get("stage") as string,
+      probability: Number(formData.get("probability")),
+      closeDate: formData.get("closeDate") as string,
+      repId: "SR001"
+    }
+
+    try {
+      if (editingOpp) {
+        await updateDoc(doc(db, "opportunities", editingOpp.id), payload)
+        toast({ title: "Opportunity Updated" })
+      } else {
+        await addDoc(collection(db, "opportunities"), payload)
+        toast({ title: "Opportunity Created" })
+      }
+      setIsDialogOpen(false)
+      setEditingOpp(null)
+    } catch (err) {
+      toast({ title: "Error saving deal", variant: "destructive" })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!db) return
+    try {
+      await deleteDoc(doc(db, "opportunities", id))
+      toast({ title: "Deal Removed" })
+    } catch (err) {
+      toast({ title: "Error removing deal", variant: "destructive" })
+    }
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden animate-in slide-in-from-bottom-2 duration-500">
@@ -66,12 +126,70 @@ export default function VelocityPipeline() {
               className="pl-9 h-9 border-border/50 bg-background/50" 
             />
           </div>
-          <Button variant="outline" size="sm" className="gap-2 border-border/50">
-            <Filter className="h-4 w-4" /> Filter
-          </Button>
-          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
-            <Plus className="h-4 w-4" /> New Deal
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={(o) => { setIsDialogOpen(o); if(!o) setEditingOpp(null); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+                <Plus className="h-4 w-4" /> New Deal
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleSave}>
+                <DialogHeader>
+                  <DialogTitle>{editingOpp ? "Edit Deal" : "New Opportunity"}</DialogTitle>
+                  <DialogDescription>Define the potential deal parameters below.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label>Product Solution</Label>
+                    <Input name="product" defaultValue={editingOpp?.product} required placeholder="e.g. CloudSync Enterprise" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Customer</Label>
+                    <Select name="customerId" defaultValue={editingOpp?.customerId || ""}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CUSTOMERS.slice(0, 20).map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Value ($)</Label>
+                      <Input name="value" type="number" defaultValue={editingOpp?.value} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Stage</Label>
+                      <Select name="stage" defaultValue={editingOpp?.stage || "Prospecting"}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STAGE_CONFIG.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Probability (%)</Label>
+                      <Input name="probability" type="number" defaultValue={editingOpp?.probability || 50} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Expected Close</Label>
+                      <Input name="closeDate" type="date" defaultValue={editingOpp?.closeDate} required />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Finalize Opportunity</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </header>
 
@@ -79,7 +197,7 @@ export default function VelocityPipeline() {
         <div className="flex h-full min-w-max p-6 gap-6">
           {STAGE_CONFIG.map((stage) => {
             const stageOpps = filteredOpps.filter(o => o.stage === stage.id);
-            const totalValue = stageOpps.reduce((acc, o) => acc + o.value, 0);
+            const totalValue = stageOpps.reduce((acc, o) => acc + (o.value || 0), 0);
 
             return (
               <div key={stage.id} className="w-80 flex flex-col gap-4">
@@ -117,9 +235,12 @@ export default function VelocityPipeline() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>Edit Deal</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { setEditingOpp(opp); setIsDialogOpen(true); }}>
+                                <Edit className="mr-2 h-3 w-3" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(opp.id)}>
+                                <Trash2 className="mr-2 h-3 w-3" /> Delete
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -135,7 +256,7 @@ export default function VelocityPipeline() {
                         <div className="flex justify-between items-center py-1">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-foreground/90">
                             <DollarSign className="h-3 w-3 text-accent" />
-                            {(opp.value / 1000).toFixed(0)}k
+                            {((opp.value || 0) / 1000).toFixed(0)}k
                           </div>
                           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                             <Clock className="h-3 w-3" />
@@ -145,23 +266,14 @@ export default function VelocityPipeline() {
 
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-[10px] font-medium uppercase tracking-tight">
-                            <span className="text-muted-foreground">Pipeline Health</span>
+                            <span className="text-muted-foreground">Confidence</span>
                             <span className="text-accent">{opp.probability}%</span>
                           </div>
                           <Progress value={opp.probability} className="h-1 bg-secondary" />
                         </div>
-
-                        <div className="pt-2 flex items-center justify-between border-t border-border/30">
-                          <div className="text-[9px] font-bold text-muted-foreground uppercase">{opp.id}</div>
-                          <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all translate-x-[-4px] group-hover:translate-x-0" />
-                        </div>
                       </CardContent>
                     </Card>
                   ))}
-                  
-                  <Button variant="ghost" className="w-full h-10 border-dashed border-border/50 border flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-xs font-medium">
-                    <Plus className="h-3 w-3" /> Add Opportunity
-                  </Button>
                 </div>
               </div>
             );
