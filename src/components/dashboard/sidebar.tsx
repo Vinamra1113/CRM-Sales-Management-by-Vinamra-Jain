@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -18,7 +19,8 @@ import {
   Sun,
   Moon,
   LogOut,
-  UserCircle
+  UserCircle,
+  PieChart
 } from "lucide-react"
 
 import {
@@ -50,6 +52,7 @@ const navigation = [
   { name: "Marketing Hub", href: "/marketing", icon: BarChart3, role: "marketing" },
   { name: "Product Hub", href: "/product-manager", icon: Package, role: "product" },
   { name: "Executive Hub", href: "/executive", icon: LayoutDashboard, role: "executive" },
+  { name: "BI Insights", href: "/insights", icon: PieChart, role: "executive" },
 ]
 
 export function AppSidebar() {
@@ -59,7 +62,6 @@ export function AppSidebar() {
   const [theme, setTheme] = React.useState<"dark" | "light">("dark")
 
   React.useEffect(() => {
-    // Check initial theme preference or default to dark
     const isDark = document.documentElement.classList.contains("dark") || 
                    (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
     
@@ -128,7 +130,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Workspace</SidebarGroupLabel>
           <SidebarMenu>
             {navigation.map((item) => (
-              <SidebarMenuItem key={item.name} className={cn(role !== item.role && "opacity-50 grayscale")}>
+              <SidebarMenuItem key={item.name} className={cn(role !== item.role && item.role !== "executive" && "opacity-50 grayscale")}>
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === item.href}
