@@ -1,5 +1,4 @@
-
-"use client"
+'use client';
 
 import * as React from "react"
 import { 
@@ -12,19 +11,42 @@ import {
   Calendar,
   AlertTriangle,
   ChevronRight,
-  TrendingUp,
-  Activity
+  Settings2,
+  CheckCircle2
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetDescription, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger 
+} from "@/components/ui/sheet"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { CUSTOMERS } from "@/lib/data"
 
 export default function GrowthHealthTracker() {
+  const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
+  const [isSyncing, setIsSyncing] = React.useState(false)
+  const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null)
 
   React.useEffect(() => {
     setMounted(true)
@@ -32,7 +54,7 @@ export default function GrowthHealthTracker() {
 
   const avgSatisfaction = React.useMemo(() => {
     if (!mounted) return "0.0"
-    return (CUSTOMERS.reduce((acc, c) => acc + c.satisfaction, 0) / CUSTOMERS.length).toFixed(1)
+    return (CUSTOMERS.reduce((acc, c) => acc + (c.satisfaction || 0), 0) / CUSTOMERS.length).toFixed(1)
   }, [mounted])
 
   const segments = React.useMemo(() => {
@@ -51,8 +73,19 @@ export default function GrowthHealthTracker() {
 
   const atRiskAccounts = React.useMemo(() => {
     if (!mounted) return []
-    return CUSTOMERS.filter(c => c.satisfaction < 3.0).slice(0, 5)
+    return CUSTOMERS.filter(c => c.satisfaction < 3.0).slice(0, 10)
   }, [mounted])
+
+  const handleForceSync = () => {
+    setIsSyncing(true)
+    setTimeout(() => {
+      setIsSyncing(false)
+      toast({
+        title: "Survey Sync Complete",
+        description: "Latest NPS data has been pulled from primary production servers.",
+      })
+    }, 2000)
+  }
 
   if (!mounted) return null
 
@@ -114,9 +147,46 @@ export default function GrowthHealthTracker() {
                 <Bell className="h-5 w-5 text-destructive animate-bounce" />
               </div>
             </div>
-            <Button variant="secondary" className="w-full text-xs font-bold gap-2">
-              Configure Automation
-            </Button>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="w-full text-xs font-bold gap-2">
+                  <Settings2 className="h-3.5 w-3.5" /> Configure Automation
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Renewal Automation Guards</DialogTitle>
+                  <DialogDescription>Define logic for automated stakeholder engagement and alerts.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Auto-Reminder (T-90 Days)</Label>
+                      <p className="text-[10px] text-muted-foreground">Notify Account Manager for all Tier 1 clients.</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Risk Escalation</Label>
+                      <p className="text-[10px] text-muted-foreground">Alert VP of Sales if satisfaction score drops below 3.0.</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Automated Renewals</Label>
+                      <p className="text-[10px] text-muted-foreground">Self-service renewal portal for small-business tier.</p>
+                    </div>
+                    <Switch />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => toast({ title: "Rules Updated" })}>Save Configuration</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </div>
@@ -129,8 +199,8 @@ export default function GrowthHealthTracker() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
-              {atRiskAccounts.map((item, i) => (
-                <div key={i} className="flex flex-col md:flex-row items-center gap-4 p-4 hover:bg-muted/30 transition-all cursor-pointer">
+              {atRiskAccounts.map((item) => (
+                <div key={item.id} className="flex flex-col md:flex-row items-center gap-4 p-4 hover:bg-muted/30 transition-all group">
                   <div className="flex-1 space-y-1">
                     <div className="font-bold text-sm">{item.name}</div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -150,9 +220,45 @@ export default function GrowthHealthTracker() {
                     <Badge variant="outline" className="text-[10px] uppercase font-bold h-6 border-none bg-destructive/10 text-destructive">
                       CRITICAL RISK
                     </Badge>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                    
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedCustomer(item)}>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent>
+                        <SheetHeader>
+                          <SheetTitle>Account Deep Dive</SheetTitle>
+                          <SheetDescription>Strategic oversight for {item.name}</SheetDescription>
+                        </SheetHeader>
+                        <div className="py-6 space-y-6">
+                          <div className="space-y-2">
+                            <Label className="text-[10px] uppercase tracking-widest">Account Health</Label>
+                            <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/10">
+                              <div className="text-2xl font-bold text-destructive">{item.satisfaction} / 5.0</div>
+                              <p className="text-xs text-muted-foreground mt-1">NPS score is 42% below regional average.</p>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[10px] uppercase tracking-widest">Revenue at Risk</Label>
+                            <div className="text-lg font-bold">${item.revenue.toLocaleString()} ARR</div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[10px] uppercase tracking-widest">Assigned Manager</Label>
+                            <div className="flex items-center gap-2">
+                              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                                {item.manager?.charAt(0)}
+                              </div>
+                              <span className="text-sm font-medium">{item.manager}</span>
+                            </div>
+                          </div>
+                          <Button className="w-full bg-primary" onClick={() => toast({ title: "Intervention Task Logged" })}>
+                            Request Executive Check-in
+                          </Button>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
                   </div>
                 </div>
               ))}
@@ -188,8 +294,18 @@ export default function GrowthHealthTracker() {
                 <div className="font-headline font-bold text-xl">{segments.detractors}%</div>
               </div>
             </div>
-            <Button variant="outline" className="w-full text-xs font-bold gap-2 bg-secondary/20">
-              <RefreshCcw className="h-3.5 w-3.5" /> Force Survey Sync
+            <Button 
+              variant="outline" 
+              className="w-full text-xs font-bold gap-2 bg-secondary/20"
+              onClick={handleForceSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
+              {isSyncing ? "Synchronizing..." : "Force Survey Sync"}
             </Button>
           </CardContent>
         </Card>
