@@ -8,7 +8,9 @@ import {
   Globe, 
   Activity, 
   Target, 
-  Users
+  Users,
+  BarChart3,
+  ChevronRight
 } from "lucide-react"
 import { 
   AreaChart, 
@@ -35,29 +37,29 @@ export default function ExecutiveLeadershipHub() {
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold font-headline">Executive Hub</h1>
-          <p className="text-muted-foreground">High-level business performance and global market intelligence.</p>
+          <h1 className="text-3xl font-bold font-headline">Leadership Insights</h1>
+          <p className="text-muted-foreground">High-level financial snapshots and cross-region growth modeling.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="border-border/50 gap-2" asChild>
             <Link href="/dashboard">
-              <Globe className="h-4 w-4" /> Global Dashboard
+              <BarChart3 className="h-4 w-4" /> Global Metrics
             </Link>
           </Button>
           <Button className="bg-primary gap-2">
-            <TrendingUp className="h-4 w-4" /> Export Report
+            <TrendingUp className="h-4 w-4" /> Export Board Report
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: `$${(totalRevenue / 1000000).toFixed(1)}M`, sub: "Global Performance", icon: TrendingUp, color: "text-accent" },
-          { label: "Revenue Forecast", value: `$${(totalForecast / 1000000).toFixed(1)}M`, sub: "Expected next half", icon: Target, color: "text-primary" },
-          { label: "Win Rate", value: `${avgWinRate}%`, sub: "Average cross-region", icon: Activity, color: "text-accent" },
-          { label: "Regions Active", value: EXECUTIVE_KPI_DATA.length.toString(), sub: "Market coverage", icon: Users, color: "text-primary" },
+          { label: "Group Revenue", value: `$${(totalRevenue / 1000000).toFixed(2)}M`, sub: "Annual Performance", icon: TrendingUp, color: "text-accent" },
+          { label: "Forecast Pipeline", value: `$${(totalForecast / 1000000).toFixed(2)}M`, sub: "H2 Expected", icon: Target, color: "text-primary" },
+          { label: "Avg Win Rate", value: `${avgWinRate}%`, sub: "Aggregate MTD", icon: Activity, color: "text-accent" },
+          { label: "Region Coverage", value: "5 Active", sub: "Global territories", icon: Globe, color: "text-primary" },
         ].map((kpi, i) => (
-          <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm shadow-lg shadow-black/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{kpi.label}</CardTitle>
               <kpi.icon className={cn("h-4 w-4", kpi.color)} />
@@ -73,21 +75,21 @@ export default function ExecutiveLeadershipHub() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Regional Growth Analysis</CardTitle>
-            <CardDescription>Performance tracking vs predictive modeling across all territories.</CardDescription>
+            <CardTitle className="text-lg font-headline">Territory Growth Performance</CardTitle>
+            <CardDescription>Regional achievement metrics from executive KPI dataset.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {EXECUTIVE_KPI_DATA.map((item) => (
               <div key={item.region} className="space-y-2">
                 <div className="flex justify-between items-end">
                   <div className="space-y-1">
-                    <div className="text-sm font-bold uppercase">{item.region}</div>
-                    <div className="text-xs text-muted-foreground">Win Rate: {item.winRate}%</div>
+                    <div className="text-sm font-bold uppercase tracking-tight">{item.region} Region</div>
+                    <div className="text-[10px] text-muted-foreground">Regional Win Rate: {item.winRate}%</div>
                   </div>
                   <div className="text-right space-y-1">
-                    <div className="text-sm font-bold text-accent">${item.revenue.toLocaleString()}</div>
-                    <Badge variant="outline" className="text-[9px] bg-green-500/10 text-green-500 border-none">
-                      +{item.growth}% Growth
+                    <div className="text-sm font-bold text-accent">${(item.revenue / 1000000).toFixed(2)}M</div>
+                    <Badge variant="outline" className="text-[9px] bg-green-500/10 text-green-500 border-none font-bold uppercase">
+                      +{item.growth}% Expansion
                     </Badge>
                   </div>
                 </div>
@@ -99,24 +101,33 @@ export default function ExecutiveLeadershipHub() {
 
         <Card className="border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Global Market Forecast</CardTitle>
+            <CardTitle className="text-lg font-headline">Regional Forecast Map</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px] flex flex-col justify-center">
+          <CardContent className="h-[300px] pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={EXECUTIVE_KPI_DATA}>
                 <defs>
-                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="region" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `$${(v/1000000).toFixed(1)}M`} />
-                <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorActual)" />
+                <YAxis hide />
+                <RechartsTooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '10px' }} />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
                 <Area type="monotone" dataKey="forecast" stroke="hsl(var(--accent))" strokeWidth={1} strokeDasharray="5 5" fillOpacity={0} />
               </AreaChart>
             </ResponsiveContainer>
+            <div className="mt-4 space-y-3">
+               <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground px-1">
+                 <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary" /> Actual Revenue</div>
+                 <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full border border-accent border-dashed" /> Predictive Mode</div>
+               </div>
+               <Button variant="ghost" className="w-full text-xs font-bold text-accent" asChild>
+                 <Link href="/dashboard">View Predictive Deep-Dive <ChevronRight className="ml-1 h-3 w-3" /></Link>
+               </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
