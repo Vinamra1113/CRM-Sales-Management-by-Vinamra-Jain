@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "sales-hero",
+      "description": "Abstract sales growth visualization",
+      "imageUrl": "https://picsum.photos/seed/sales1/1200/600",
+      "imageHint": "sales growth"
+    },
+    {
+      "id": "team-collaboration",
+      "description": "Sales team collaborating in a modern office",
+      "imageUrl": "https://picsum.photos/seed/team1/800/400",
+      "imageHint": "team collaboration"
+    },
+    {
+      "id": "customer-success",
+      "description": "Customer success and satisfaction representation",
+      "imageUrl": "https://picsum.photos/seed/success1/400/300",
+      "imageHint": "customer success"
+    }
+  ]
+}
