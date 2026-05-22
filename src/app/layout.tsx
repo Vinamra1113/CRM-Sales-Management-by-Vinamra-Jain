@@ -7,8 +7,8 @@ import { RoleProvider } from '@/components/role-context';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'HOSHŌ | Digital Sales Project',
-  description: 'Enterprise Sales Management and Intelligence Platform',
+  title: 'CRM & Sales Management | Vinamra Jain™',
+  description: 'Enterprise Sales Management and Intelligence Platform by Vinamra Jain™',
 };
 
 export default function RootLayout({

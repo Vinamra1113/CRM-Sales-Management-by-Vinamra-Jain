@@ -101,8 +101,8 @@ export function AppSidebar() {
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-headline font-bold text-sm leading-tight tracking-tight">HOSHŌ</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Digital Sales</span>
+            <span className="font-headline font-bold text-xs leading-tight tracking-tight">CRM & SALES</span>
+            <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Vinamra Jain™</span>
           </div>
         </div>
         

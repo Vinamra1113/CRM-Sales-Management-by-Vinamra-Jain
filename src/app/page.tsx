@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect } from "react"
@@ -23,9 +22,14 @@ export default function Home() {
           <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-white shadow-2xl shadow-primary/20 rotate-3 hover:rotate-0 transition-transform cursor-pointer">
             <ShieldCheck className="h-10 w-10" />
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold font-headline tracking-tighter bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            HOSHŌ DIGITAL SALES
-          </h1>
+          <div className="space-y-2">
+            <h1 className="text-5xl md:text-7xl font-bold font-headline tracking-tighter bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent uppercase">
+              CRM & SALES MANAGEMENT
+            </h1>
+            <p className="text-xs font-bold tracking-[0.4em] text-muted-foreground uppercase opacity-80">
+              by Vinamra Jain™
+            </p>
+          </div>
           <p className="text-xl text-muted-foreground font-body max-w-2xl mx-auto leading-relaxed">
             Enterprise-grade sales intelligence and performance optimization platform. Select your role to enter the workspace.
           </p>
@@ -61,7 +65,7 @@ export default function Home() {
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
           <p className="mt-8 text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold opacity-50">
-            System Status: Nominal • Enterprise Multi-Role Environment
+            System Status: Nominal • Vinamra Jain™ Enterprise Environment
           </p>
         </div>
       </div>
