@@ -6,14 +6,6 @@ The **CRM & Sales Management** platform is an enterprise-grade sales intelligenc
 ## Core Vision
 The mission of this project is to bridge the gap between field intelligence and executive decision-making. By providing specialized interfaces for different organizational roles, the platform ensures that every stakeholder has the exact tools they need to manage the sales lifecycle—from lead generation to contract renewal.
 
-## Documentation Index
-- [Solution Architecture](./docs/architecture.md)
-- [Technical Details](./docs/technical-details.md)
-- [Strategic Benefits](./docs/benefits.md)
-- [Alternate Approach](./docs/alternate-approach.md)
-- [Project Assumptions](./docs/assumptions.md)
-- [Visual Documentation](./docs/visuals.md)
-
 ## Persona-Based Workspaces
 
 ### 1. Sales Representative Hub
@@ -55,5 +47,5 @@ The mission of this project is to bridge the gap between field intelligence and 
 ## Ownership
 This platform is a proprietary enterprise environment developed and trademarked by **Vinamra Jain™**.
 
----
+***
 *System Status: Nominal • Vinamra Jain™ Enterprise Environment*
