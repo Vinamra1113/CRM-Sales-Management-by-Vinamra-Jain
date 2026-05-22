@@ -1,10 +1,8 @@
-
-"use client"
+'use client';
 
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Workflow, 
   Users, 
   MapPin, 
   CheckCircle2, 
@@ -19,22 +17,48 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { SALES_REPS, DISCOUNTS, CUSTOMERS } from "@/lib/data"
+import { SALES_REPS, DISCOUNTS as INITIAL_DISCOUNTS, CUSTOMERS } from "@/lib/data"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, doc, updateDoc } from "firebase/firestore"
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function SalesManagerHub() {
   const { toast } = useToast()
+  const db = useFirestore()
+  const { data: dbDiscounts = [] } = useCollection<any>(db ? collection(db, "discounts") : null)
 
-  const pendingDiscounts = DISCOUNTS.filter(d => d.status === 'Pending');
+  const discounts = dbDiscounts.length > 0 ? dbDiscounts : INITIAL_DISCOUNTS;
+  const pendingDiscounts = discounts.filter(d => (d.status || d.ApprovalStatus) === 'Pending');
+  
   const topPerformers = [...SALES_REPS]
     .sort((a, b) => (b.achievement / b.target) - (a.achievement / a.target))
     .slice(0, 5);
 
-  const handleAction = (type: 'approve' | 'decline', dealId: string) => {
-    toast({
-      variant: type === 'decline' ? 'destructive' : 'default',
-      title: type === 'approve' ? "Discount Approved" : "Discount Declined",
-      description: `${type === 'approve' ? 'Successfully approved' : 'Declined'} discount request ${dealId}.`,
+  const handleAction = (type: 'approve' | 'decline', discountId: string) => {
+    if (!db) return
+    
+    const newStatus = type === 'approve' ? 'Approved' : 'Rejected';
+    
+    updateDoc(doc(db, "discounts", discountId), {
+      status: newStatus,
+      ApprovalStatus: newStatus
     })
+    .then(() => {
+      toast({
+        variant: type === 'decline' ? 'destructive' : 'default',
+        title: type === 'approve' ? "Discount Approved" : "Discount Declined",
+        description: `Request ${discountId} has been ${newStatus.toLowerCase()}.`,
+      })
+    })
+    .catch(async (err) => {
+      const permsError = new FirestorePermissionError({
+        path: `discounts/${discountId}`,
+        operation: 'update',
+        requestResourceData: { status: newStatus }
+      });
+      errorEmitter.emit('permission-error', permsError);
+    });
   }
 
   return (
@@ -87,24 +111,27 @@ export default function SalesManagerHub() {
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
               {pendingDiscounts.map((req) => (
-                <div key={req.id} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 hover:bg-muted/20 transition-all">
+                <div key={req.id || req.RequestID} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 hover:bg-muted/20 transition-all">
                   <div className="flex-1 space-y-1">
                     <div className="font-bold text-sm">
-                      {CUSTOMERS.find(c => c.id === req.customerId)?.name || "Unknown Client"} 
-                      <span className="text-[10px] font-normal text-muted-foreground uppercase ml-2">via {req.repName}</span>
+                      {CUSTOMERS.find(c => c.id === (req.customerId || req.CustomerID))?.name || "Unknown Client"} 
+                      <span className="text-[10px] font-normal text-muted-foreground uppercase ml-2">via {req.repName || req.SalesRep}</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs">
-                      <div className="text-accent font-bold">{req.percent}% Requested</div>
-                      <div className="text-muted-foreground">Date: {req.date}</div>
-                      <Badge variant="outline" className="text-[8px] uppercase">{req.id}</Badge>
+                      <div className="text-accent font-bold">{req.percent || req.RequestedDiscountPercent}% Requested</div>
+                      <div className="text-muted-foreground">Date: {req.date || req.RequestedDate}</div>
+                      <Badge variant="outline" className="text-[8px] uppercase">{req.id || req.RequestID}</Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleAction('decline', req.id)} className="h-8 text-destructive hover:bg-destructive/10"><XCircle className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleAction('approve', req.id)} className="h-8 text-primary hover:bg-primary/10"><CheckCircle2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleAction('decline', req.id || req.RequestID)} className="h-8 text-destructive hover:bg-destructive/10"><XCircle className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleAction('approve', req.id || req.RequestID)} className="h-8 text-primary hover:bg-primary/10"><CheckCircle2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
               ))}
+              {pendingDiscounts.length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-sm">No pending discount approvals.</div>
+              )}
             </div>
           </CardContent>
         </Card>

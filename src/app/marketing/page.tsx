@@ -1,23 +1,18 @@
-
-"use client"
+'use client';
 
 import * as React from "react"
 import { 
-  BarChart3, 
   Send, 
   Zap, 
   Globe, 
   TrendingUp,
   MessageSquare,
-  Plus,
-  ArrowUpRight,
-  PieChart as PieIcon
+  Plus
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { 
   Dialog, 
   DialogContent, 
@@ -32,27 +27,63 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { CAMPAIGNS, LEADS } from "@/lib/data"
+import { CAMPAIGNS as INITIAL_CAMPAIGNS, LEADS as INITIAL_LEADS } from "@/lib/data"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function MarketingHub() {
   const { toast } = useToast()
+  const db = useFirestore()
   const [mounted, setMounted] = React.useState(false)
+  const { data: dbCampaigns = [] } = useCollection<any>(db ? collection(db, "campaigns") : null)
+  const { data: dbLeads = [] } = useCollection<any>(db ? collection(db, "leads") : null)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
+  const campaigns = dbCampaigns.length > 0 ? dbCampaigns : INITIAL_CAMPAIGNS;
+  const leads = dbLeads.length > 0 ? dbLeads : INITIAL_LEADS;
+
   const stats = React.useMemo(() => {
     if (!mounted) return { avgROI: "0.00", totalLeads: "0", qualifiedLeads: "0", qualRate: "0" }
-    const roiSum = CAMPAIGNS.reduce((acc, c) => acc + c.roi, 0);
-    const qualifiedCount = LEADS.filter(l => l.status === "Qualified").length;
+    const roiSum = campaigns.reduce((acc, c) => acc + (c.roi || 0), 0);
+    const qualifiedCount = leads.filter(l => l.status === "Qualified").length;
     return {
-      avgROI: (roiSum / CAMPAIGNS.length).toFixed(2),
-      totalLeads: LEADS.length.toString(),
+      avgROI: (roiSum / campaigns.length).toFixed(2),
+      totalLeads: leads.length.toString(),
       qualifiedLeads: qualifiedCount.toString(),
-      qualRate: ((qualifiedCount / LEADS.length) * 100).toFixed(0)
+      qualRate: ((qualifiedCount / leads.length) * 100).toFixed(0)
     }
-  }, [mounted])
+  }, [mounted, campaigns, leads])
+
+  const handleLaunchCampaign = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!db) return
+
+    const formData = new FormData(e.currentTarget)
+    const payload = {
+      name: formData.get("name") as string,
+      type: formData.get("type") as string,
+      budget: Number(formData.get("budget")),
+      leadsGenerated: 0,
+      roi: 0,
+      createdAt: serverTimestamp()
+    }
+
+    addDoc(collection(db, "campaigns"), payload)
+      .then(() => toast({ title: "Campaign Launched", description: "Program metrics tracking is now live." }))
+      .catch(async (err) => {
+        const permsError = new FirestorePermissionError({
+          path: 'campaigns',
+          operation: 'create',
+          requestResourceData: payload
+        });
+        errorEmitter.emit('permission-error', permsError);
+      });
+  }
 
   if (!mounted) return null
 
@@ -64,7 +95,7 @@ export default function MarketingHub() {
           <p className="text-muted-foreground">Campaign performance monitoring and lead distribution orchestration.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Synchronized", description: `${stats.qualifiedLeads} verified leads pushed to Sales Representative Hubs.` })}>
+          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Synchronized", description: `${stats.qualifiedLeads} verified leads pushed to Sales Reps.` })}>
             <Send className="h-4 w-4" /> Distribute Leads
           </Button>
           
@@ -75,37 +106,40 @@ export default function MarketingHub() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Launch New Campaign</DialogTitle>
-                <DialogDescription>Initialize a multi-channel demand generation program.</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label>Campaign Name</Label>
-                  <Input placeholder="e.g. Q4 CloudSync Push" />
+              <form onSubmit={handleLaunchCampaign}>
+                <DialogHeader>
+                  <DialogTitle>Launch New Campaign</DialogTitle>
+                  <DialogDescription>Initialize a multi-channel demand generation program.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label>Campaign Name</Label>
+                    <Input name="name" required placeholder="e.g. Q4 CloudSync Push" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Channel</Label>
+                    <Select name="type" required defaultValue="Paid Ads">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Channel" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Webinar">Webinar</SelectItem>
+                        <SelectItem value="Social Media">Social Media</SelectItem>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Paid Ads">Paid Ads</SelectItem>
+                        <SelectItem value="SEO">SEO</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Budget Allocation</Label>
+                    <Input name="budget" type="number" required placeholder="25000" />
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label>Channel</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Channel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="webinar">Webinar</SelectItem>
-                      <SelectItem value="social">Social Media</SelectItem>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="paid">Paid Ads</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label>Budget Allocation</Label>
-                  <Input type="number" placeholder="25000" />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={() => toast({ title: "Campaign Initialized", description: "Program metrics tracking is now live in the Portfolio." })}>Launch Program</Button>
-              </DialogFooter>
+                <DialogFooter>
+                  <Button type="submit">Launch Program</Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
@@ -113,10 +147,10 @@ export default function MarketingHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Portfolio ROI", value: `${stats.avgROI}x`, sub: "Avg across 80 campaigns", icon: TrendingUp, color: "text-accent" },
+          { label: "Portfolio ROI", value: `${stats.avgROI}x`, sub: `Avg across ${campaigns.length} campaigns`, icon: TrendingUp, color: "text-accent" },
           { label: "Qualified Pipeline", value: stats.qualifiedLeads, sub: `${stats.qualRate}% Qualification Rate`, icon: Zap, color: "text-primary" },
-          { label: "Campaign Count", value: CAMPAIGNS.length.toString(), sub: "Active across 5 channels", icon: Globe, color: "text-accent" },
-          { label: "Lead Volume", value: stats.totalLeads, sub: "Gross generated MTD", icon: MessageSquare, color: "text-primary" },
+          { label: "Campaign Count", value: campaigns.length.toString(), sub: "Active program volume", icon: Globe, color: "text-accent" },
+          { label: "Lead Volume", value: stats.totalLeads, sub: "Gross generated lifetime", icon: MessageSquare, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -135,11 +169,11 @@ export default function MarketingHub() {
         <Card className="lg:col-span-2 border-border/50 bg-card/30">
           <CardHeader>
             <CardTitle className="text-lg font-headline">High-Performance Programs</CardTitle>
-            <CardDescription>Top campaigns ranked by ROI from your marketing dataset.</CardDescription>
+            <CardDescription>Top campaigns ranked by ROI.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {CAMPAIGNS.sort((a, b) => b.roi - a.roi).slice(0, 6).map((camp) => (
-              <div key={camp.id} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:bg-card/80 transition-all">
+            {[...campaigns].sort((a, b) => (b.roi || 0) - (a.roi || 0)).slice(0, 6).map((camp) => (
+              <div key={camp.id || camp.name} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:bg-card/80 transition-all">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold">{camp.name}</h4>
@@ -148,11 +182,11 @@ export default function MarketingHub() {
                   <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
                     <span className="bg-primary/10 text-primary px-1.5 rounded py-0.5 font-bold">ROI: {camp.roi}x</span>
                     <span>Leads: {camp.leadsGenerated}</span>
-                    <span className="font-code">Budget: ${camp.budget.toLocaleString()}</span>
+                    <span className="font-code">Budget: ${Number(camp.budget).toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-bold text-accent">{((camp.leadsGenerated / camp.budget) * 1000).toFixed(1)}</div>
+                  <div className="text-xs font-bold text-accent">{camp.budget > 0 ? ((camp.leadsGenerated / camp.budget) * 1000).toFixed(1) : "0.0"}</div>
                   <div className="text-[8px] text-muted-foreground uppercase">L/$1k</div>
                 </div>
               </div>
@@ -165,17 +199,17 @@ export default function MarketingHub() {
             <CardTitle className="text-lg font-headline">Real-time Lead Feed</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {LEADS.slice(0, 10).map((lead) => (
-              <div key={lead.id} className="flex items-center gap-3 p-2 rounded-lg bg-background/40 border border-border/10">
+            {leads.slice(0, 10).map((lead) => (
+              <div key={lead.id || lead.LeadID} className="flex items-center gap-3 p-2 rounded-lg bg-background/40 border border-border/10">
                 <div className={cn(
                   "h-8 w-8 rounded flex items-center justify-center text-[10px] font-bold",
-                  lead.score >= 80 ? "bg-green-500/20 text-green-500" : "bg-primary/20 text-primary"
+                  (lead.score || lead.LeadScore) >= 80 ? "bg-green-500/20 text-green-500" : "bg-primary/20 text-primary"
                 )}>
-                  {lead.score}
+                  {lead.score || lead.LeadScore}
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <div className="text-[11px] font-bold truncate">{lead.assignedRep}</div>
-                  <div className="text-[9px] text-muted-foreground uppercase">{lead.status} • {lead.leadSource}</div>
+                  <div className="text-[11px] font-bold truncate">{lead.assignedRep || lead.AssignedRep}</div>
+                  <div className="text-[9px] text-muted-foreground uppercase">{lead.status || lead.Status} • {lead.leadSource || lead.LeadSource}</div>
                 </div>
                 <Badge variant="outline" className="text-[8px] border-none bg-muted/50 px-1">NEW</Badge>
               </div>

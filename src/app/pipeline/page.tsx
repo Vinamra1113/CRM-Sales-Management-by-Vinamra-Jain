@@ -1,15 +1,12 @@
-
-"use client"
+'use client';
 
 import * as React from "react"
 import { 
   MoreHorizontal, 
   Plus, 
   Search, 
-  Filter, 
   DollarSign, 
   Clock, 
-  ArrowRight,
   AlertCircle,
   Trash2,
   Edit
@@ -42,6 +39,8 @@ import { useFirestore, useCollection } from "@/firebase"
 import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { OPPORTUNITIES as INITIAL_DATA, CUSTOMERS } from "@/lib/data"
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const STAGE_CONFIG = [
   { id: "Prospecting", name: "Prospecting" },
@@ -69,7 +68,7 @@ export default function VelocityPipeline() {
     );
   }, [search, opportunities]);
 
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!db) return
     
@@ -84,29 +83,44 @@ export default function VelocityPipeline() {
       repId: "SR001"
     }
 
-    try {
-      if (editingOpp) {
-        await updateDoc(doc(db, "opportunities", editingOpp.id), payload)
-        toast({ title: "Opportunity Updated" })
-      } else {
-        await addDoc(collection(db, "opportunities"), payload)
-        toast({ title: "Opportunity Created" })
-      }
-      setIsDialogOpen(false)
-      setEditingOpp(null)
-    } catch (err) {
-      toast({ title: "Error saving deal", variant: "destructive" })
+    if (editingOpp) {
+      updateDoc(doc(db, "opportunities", editingOpp.id), payload)
+        .then(() => toast({ title: "Opportunity Updated" }))
+        .catch(async (err) => {
+          const permsError = new FirestorePermissionError({
+            path: `opportunities/${editingOpp.id}`,
+            operation: 'update',
+            requestResourceData: payload
+          });
+          errorEmitter.emit('permission-error', permsError);
+        });
+    } else {
+      addDoc(collection(db, "opportunities"), payload)
+        .then(() => toast({ title: "Opportunity Created" }))
+        .catch(async (err) => {
+          const permsError = new FirestorePermissionError({
+            path: 'opportunities',
+            operation: 'create',
+            requestResourceData: payload
+          });
+          errorEmitter.emit('permission-error', permsError);
+        });
     }
+    setIsDialogOpen(false)
+    setEditingOpp(null)
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!db) return
-    try {
-      await deleteDoc(doc(db, "opportunities", id))
-      toast({ title: "Deal Removed" })
-    } catch (err) {
-      toast({ title: "Error removing deal", variant: "destructive" })
-    }
+    deleteDoc(doc(db, "opportunities", id))
+      .then(() => toast({ title: "Deal Removed" }))
+      .catch(async (err) => {
+        const permsError = new FirestorePermissionError({
+          path: `opportunities/${id}`,
+          operation: 'delete'
+        });
+        errorEmitter.emit('permission-error', permsError);
+      });
   }
 
   return (
