@@ -1,13 +1,16 @@
+
 'use client';
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { 
   Send, 
   Zap, 
   Globe, 
   TrendingUp,
   MessageSquare,
-  Plus
+  Plus,
+  ChevronLeft
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -30,10 +33,11 @@ import { cn } from "@/lib/utils"
 import { CAMPAIGNS as INITIAL_CAMPAIGNS, LEADS as INITIAL_LEADS } from "@/lib/data"
 import { useFirestore, useCollection } from "@/firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function MarketingHub() {
+  const router = useRouter()
   const { toast } = useToast()
   const db = useFirestore()
   const [mounted, setMounted] = React.useState(false)
@@ -91,6 +95,12 @@ export default function MarketingHub() {
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="h-8 w-8 p-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Back to Roles</span>
+          </div>
           <h1 className="text-3xl font-bold font-headline">Marketing Intelligence</h1>
           <p className="text-muted-foreground">Campaign performance monitoring and lead distribution orchestration.</p>
         </div>
@@ -173,10 +183,10 @@ export default function MarketingHub() {
           </CardHeader>
           <CardContent className="space-y-4">
             {[...campaigns].sort((a, b) => (b.roi || 0) - (a.roi || 0)).slice(0, 6).map((camp) => (
-              <div key={camp.id || camp.name} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:bg-card/80 transition-all">
+              <div key={camp.id || camp.name} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:bg-card/80 transition-all cursor-pointer group">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold">{camp.name}</h4>
+                    <h4 className="text-sm font-bold group-hover:text-primary transition-colors">{camp.name}</h4>
                     <Badge variant="secondary" className="text-[9px] h-4 border-none">{camp.type}</Badge>
                   </div>
                   <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
@@ -200,7 +210,7 @@ export default function MarketingHub() {
           </CardHeader>
           <CardContent className="space-y-4">
             {leads.slice(0, 10).map((lead) => (
-              <div key={lead.id || lead.LeadID} className="flex items-center gap-3 p-2 rounded-lg bg-background/40 border border-border/10">
+              <div key={lead.id || lead.LeadID} className="flex items-center gap-3 p-2 rounded-lg bg-background/40 border border-border/10 hover:bg-muted/50 transition-colors cursor-pointer group">
                 <div className={cn(
                   "h-8 w-8 rounded flex items-center justify-center text-[10px] font-bold",
                   (lead.score || lead.LeadScore) >= 80 ? "bg-green-500/20 text-green-500" : "bg-primary/20 text-primary"
@@ -208,13 +218,13 @@ export default function MarketingHub() {
                   {lead.score || lead.LeadScore}
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <div className="text-[11px] font-bold truncate">{lead.assignedRep || lead.AssignedRep}</div>
+                  <div className="text-[11px] font-bold truncate group-hover:text-primary transition-colors">{lead.assignedRep || lead.AssignedRep}</div>
                   <div className="text-[9px] text-muted-foreground uppercase">{lead.status || lead.Status} • {lead.leadSource || lead.LeadSource}</div>
                 </div>
                 <Badge variant="outline" className="text-[8px] border-none bg-muted/50 px-1">NEW</Badge>
               </div>
             ))}
-            <Button variant="outline" className="w-full text-xs font-bold mt-2">
+            <Button variant="outline" className="w-full text-xs font-bold mt-2" onClick={() => router.push('/orchestrator')}>
               Access Lead Data Lake
             </Button>
           </CardContent>

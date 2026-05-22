@@ -1,7 +1,9 @@
+
 'use client';
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { 
   HeartPulse, 
   Bell, 
@@ -10,7 +12,8 @@ import {
   AlertTriangle,
   FileText,
   Star,
-  Plus
+  Plus,
+  ChevronLeft
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -42,10 +45,11 @@ import { cn } from "@/lib/utils"
 import { ACCOUNT_PLANS as INITIAL_PLANS, RENEWALS as INITIAL_RENEWALS, CUSTOMERS } from "@/lib/data"
 import { useFirestore, useCollection } from "@/firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function AccountManagerHub() {
+  const router = useRouter()
   const { toast } = useToast()
   const db = useFirestore()
   const [mounted, setMounted] = React.useState(false)
@@ -100,6 +104,12 @@ export default function AccountManagerHub() {
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="h-8 w-8 p-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Back to Roles</span>
+          </div>
           <h1 className="text-3xl font-bold font-headline">Account Hub</h1>
           <p className="text-muted-foreground">Strategic account planning and proactive retention management.</p>
         </div>
@@ -118,7 +128,7 @@ export default function AccountManagerHub() {
               <div className="py-6 space-y-6">
                 <div className="max-h-[60vh] overflow-y-auto space-y-4">
                   {plans.slice(0, 10).map((plan) => (
-                    <div key={plan.id || plan.PlanID} className="space-y-2 p-4 rounded-lg border bg-card">
+                    <div key={plan.id || plan.PlanID} className="space-y-2 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => toast({ title: "Plan Selected", description: "Opening strategic roadmap..." })}>
                       <div className="flex justify-between items-center">
                         <span className="font-bold">{CUSTOMERS.find(c => c.id === (plan.customerId || plan.CustomerID))?.name || "Unknown"}</span>
                         <Badge variant="secondary">Target: ${Number(plan.targetRevenue || plan.TargetRevenue).toLocaleString()}</Badge>
@@ -204,7 +214,7 @@ export default function AccountManagerHub() {
         <Card className="lg:col-span-2 border-border/50 bg-card/30">
           <CardHeader>
             <CardTitle className="text-lg font-headline">Key Strategic Renewals</CardTitle>
-            <CardDescription>Upcoming contract dates.</CardDescription>
+            <CardDescription>Upcoming contract dates. Click for detail.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
@@ -212,12 +222,16 @@ export default function AccountManagerHub() {
                 const customer = CUSTOMERS.find(c => c.id === (rel.customerId || rel.CustomerID));
                 const status = rel.status || rel.RenewalStatus;
                 return (
-                  <div key={rel.id || rel.RenewalID} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-all cursor-pointer">
-                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center border border-border/50">
+                  <div 
+                    key={rel.id || rel.RenewalID} 
+                    onClick={() => router.push('/health')}
+                    className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-all cursor-pointer group"
+                  >
+                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center border border-border/50 group-hover:border-primary/50 transition-colors">
                       <Star className={cn("h-5 w-5", status === "Renewed" ? "text-accent" : "text-muted")} />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-bold">{customer?.name || "Unknown Client"}</div>
+                      <div className="text-sm font-bold group-hover:text-primary transition-colors">{customer?.name || "Unknown Client"}</div>
                       <div className="text-[10px] text-muted-foreground uppercase tracking-widest">End Date: {rel.endDate || rel.ContractEndDate}</div>
                     </div>
                     <div className="text-right">
@@ -240,11 +254,11 @@ export default function AccountManagerHub() {
             <CardTitle className="text-lg font-headline">Recent Milestones</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-3 rounded-lg border border-border/10 bg-accent/5 space-y-1">
+            <div className="p-3 rounded-lg border border-border/10 bg-accent/5 space-y-1 hover:bg-accent/10 transition-colors cursor-pointer">
               <div className="text-[10px] font-bold text-accent uppercase">Expansion Win</div>
               <div className="text-xs font-medium">CUST0042 Upgraded to Tier 3</div>
             </div>
-            <div className="p-3 rounded-lg border border-border/10 bg-primary/5 space-y-1">
+            <div className="p-3 rounded-lg border border-border/10 bg-primary/5 space-y-1 hover:bg-primary/10 transition-colors cursor-pointer">
               <div className="text-[10px] font-bold text-primary uppercase">Strategy Lock</div>
               <div className="text-xs font-medium">New Plan approved for HOSHŌ Core</div>
             </div>

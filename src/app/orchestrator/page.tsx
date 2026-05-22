@@ -1,6 +1,8 @@
+
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { 
   ShieldCheck, 
   MapPin, 
@@ -8,7 +10,8 @@ import {
   Clock, 
   CheckCircle2, 
   XCircle, 
-  Percent
+  Percent,
+  ChevronLeft
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -24,6 +27,7 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function LeadOrchestrator() {
+  const router = useRouter()
   const { toast } = useToast()
   const db = useFirestore()
   const { data: dbDiscounts = [] } = useCollection<any>(db ? collection(db, "discounts") : null)
@@ -68,6 +72,12 @@ export default function LeadOrchestrator() {
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2 mb-2">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="h-8 w-8 p-0">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Return</span>
+        </div>
         <h1 className="text-3xl font-bold font-headline">Operational Lead Orchestrator</h1>
         <p className="text-muted-foreground">Territory distribution and tiered management logic for sales operations.</p>
       </div>

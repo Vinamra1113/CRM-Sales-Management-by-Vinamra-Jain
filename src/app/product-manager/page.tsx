@@ -3,6 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { 
   Rocket, 
   Lightbulb, 
@@ -12,7 +13,8 @@ import {
   Search,
   CheckCircle2,
   FileCode,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -24,6 +26,7 @@ import { cn } from "@/lib/utils"
 import { FEEDBACK, FEATURE_REQUESTS, CUSTOMERS } from "@/lib/data"
 
 export default function ProductManagerHub() {
+  const router = useRouter()
   const { toast } = useToast()
   const [search, setSearch] = React.useState("")
 
@@ -39,6 +42,12 @@ export default function ProductManagerHub() {
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="h-8 w-8 p-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Back to Roles</span>
+          </div>
           <h1 className="text-3xl font-bold font-headline">Product Feedback Loop</h1>
           <p className="text-muted-foreground">Aggregating field intelligence and customer requirements.</p>
         </div>
@@ -96,8 +105,8 @@ export default function ProductManagerHub() {
               {filteredFeedback.map((item) => {
                 const customer = CUSTOMERS.find(c => c.id === item.customerId);
                 return (
-                  <div key={item.id} className="flex items-start gap-4 p-4 hover:bg-muted/20 transition-all">
-                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 border border-border/50">
+                  <div key={item.id} className="flex items-start gap-4 p-4 hover:bg-muted/20 transition-all cursor-pointer group" onClick={() => router.push('/collaboration')}>
+                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 border border-border/50 group-hover:border-primary/50 transition-colors">
                       <Heart className={cn(
                         "h-4 w-4", 
                         item.satisfaction.includes("Satisfied") ? "text-accent fill-accent" : "text-destructive fill-destructive"
@@ -105,14 +114,14 @@ export default function ProductManagerHub() {
                     </div>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-bold">{customer?.name} • <span className="text-accent">{item.product}</span></h4>
+                        <h4 className="text-sm font-bold group-hover:text-primary transition-colors">{customer?.name} • <span className="text-accent">{item.product}</span></h4>
                         <Badge variant="outline" className={cn(
                           "text-[9px] h-4 border-none",
                           item.category === 'Bug' ? "bg-destructive/10 text-destructive" : 
                           item.category === 'Performance' ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
                         )}>{item.category}</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed italic">"{item.text}"</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed italic group-hover:text-foreground transition-colors">"{item.text}"</p>
                       <div className="flex items-center gap-3 text-[9px] font-bold uppercase text-muted-foreground">
                         <span>Sentiment: {item.satisfaction}</span>
                         <span>ID: {item.id}</span>
@@ -130,7 +139,7 @@ export default function ProductManagerHub() {
             <CardTitle className="text-lg font-headline">Technical Docs & Sync</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-3 rounded-lg border border-border/30 bg-primary/5 space-y-2">
+            <div className="p-3 rounded-lg border border-border/30 bg-primary/5 space-y-2 hover:bg-primary/10 transition-colors cursor-pointer">
               <div className="flex justify-between items-center">
                 <span className="text-[11px] font-bold">Latest: API v2.4.1</span>
                 <FileCode className="h-3.5 w-3.5 text-primary" />
@@ -146,8 +155,8 @@ export default function ProductManagerHub() {
                 "Deployment One-Pager",
                 "Competitive Battlecard (Q3)"
               ].map((doc, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-md border border-border/10 hover:bg-muted/50 cursor-pointer group">
-                  <span className="text-[11px] font-medium">{doc}</span>
+                <div key={i} className="flex items-center justify-between p-2 rounded-md border border-border/10 hover:bg-muted/50 cursor-pointer group" onClick={() => toast({ title: "Opening Document", description: `Loading ${doc}...` })}>
+                  <span className="text-[11px] font-medium group-hover:text-primary transition-colors">{doc}</span>
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all text-accent" />
                 </div>
               ))}

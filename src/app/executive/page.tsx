@@ -3,14 +3,16 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { 
   TrendingUp, 
   Globe, 
   Activity, 
   Target, 
-  Users,
   BarChart3,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft,
+  FileDown
 } from "lucide-react"
 import { 
   AreaChart, 
@@ -25,18 +27,40 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { EXECUTIVE_KPI_DATA } from "@/lib/data"
 
 export default function ExecutiveLeadershipHub() {
+  const router = useRouter()
+  const { toast } = useToast()
   const totalRevenue = EXECUTIVE_KPI_DATA.reduce((acc, k) => acc + k.revenue, 0);
   const avgWinRate = (EXECUTIVE_KPI_DATA.reduce((acc, k) => acc + k.winRate, 0) / EXECUTIVE_KPI_DATA.length).toFixed(1);
   const totalForecast = EXECUTIVE_KPI_DATA.reduce((acc, k) => acc + k.forecast, 0);
+
+  const handleExport = () => {
+    toast({
+      title: "Generating Report",
+      description: "Compiling aggregate regional data for board distribution...",
+    })
+    setTimeout(() => {
+      toast({
+        title: "Export Complete",
+        description: "Board Report v2.4 PDF has been downloaded.",
+      })
+    }, 2000)
+  }
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="h-8 w-8 p-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Back to Roles</span>
+          </div>
           <h1 className="text-3xl font-bold font-headline">Leadership Insights</h1>
           <p className="text-muted-foreground">High-level financial snapshots and cross-region growth modeling.</p>
         </div>
@@ -46,8 +70,8 @@ export default function ExecutiveLeadershipHub() {
               <BarChart3 className="h-4 w-4" /> Global Metrics
             </Link>
           </Button>
-          <Button className="bg-primary gap-2">
-            <TrendingUp className="h-4 w-4" /> Export Board Report
+          <Button className="bg-primary gap-2" onClick={handleExport}>
+            <FileDown className="h-4 w-4" /> Export Board Report
           </Button>
         </div>
       </div>
@@ -80,7 +104,7 @@ export default function ExecutiveLeadershipHub() {
           </CardHeader>
           <CardContent className="space-y-6">
             {EXECUTIVE_KPI_DATA.map((item) => (
-              <div key={item.region} className="space-y-2">
+              <div key={item.region} className="space-y-2 hover:bg-muted/10 p-2 rounded-lg transition-colors cursor-pointer" onClick={() => router.push('/dashboard')}>
                 <div className="flex justify-between items-end">
                   <div className="space-y-1">
                     <div className="text-sm font-bold uppercase tracking-tight">{item.region} Region</div>

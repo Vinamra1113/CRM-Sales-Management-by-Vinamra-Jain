@@ -1,14 +1,17 @@
+
 'use client';
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { 
   Users, 
   MapPin, 
   CheckCircle2, 
   XCircle, 
   TrendingUp,
-  BarChart3
+  BarChart3,
+  ChevronLeft
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -17,18 +20,19 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { SALES_REPS, DISCOUNTS as INITIAL_DISCOUNTS, CUSTOMERS } from "@/lib/data"
+import { SALES_REPS, DISCOUNTS as INITIAL_DATA, CUSTOMERS } from "@/lib/data"
 import { useFirestore, useCollection } from "@/firebase"
 import { collection, doc, updateDoc } from "firebase/firestore"
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function SalesManagerHub() {
+  const router = useRouter()
   const { toast } = useToast()
   const db = useFirestore()
   const { data: dbDiscounts = [] } = useCollection<any>(db ? collection(db, "discounts") : null)
 
-  const discounts = dbDiscounts.length > 0 ? dbDiscounts : INITIAL_DISCOUNTS;
+  const discounts = dbDiscounts.length > 0 ? dbDiscounts : INITIAL_DATA;
   const pendingDiscounts = discounts.filter(d => (d.status || d.ApprovalStatus) === 'Pending');
   
   const topPerformers = [...SALES_REPS]
@@ -39,8 +43,9 @@ export default function SalesManagerHub() {
     if (!db) return
     
     const newStatus = type === 'approve' ? 'Approved' : 'Rejected';
+    const docRef = doc(db, "discounts", discountId);
     
-    updateDoc(doc(db, "discounts", discountId), {
+    updateDoc(docRef, {
       status: newStatus,
       ApprovalStatus: newStatus
     })
@@ -53,7 +58,7 @@ export default function SalesManagerHub() {
     })
     .catch(async (err) => {
       const permsError = new FirestorePermissionError({
-        path: `discounts/${discountId}`,
+        path: docRef.path,
         operation: 'update',
         requestResourceData: { status: newStatus }
       });
@@ -65,6 +70,12 @@ export default function SalesManagerHub() {
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="h-8 w-8 p-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Back to Roles</span>
+          </div>
           <h1 className="text-3xl font-bold font-headline">Management Hub</h1>
           <p className="text-muted-foreground">Team performance orchestration and governance control center.</p>
         </div>
@@ -124,8 +135,21 @@ export default function SalesManagerHub() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleAction('decline', req.id || req.RequestID)} className="h-8 text-destructive hover:bg-destructive/10"><XCircle className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleAction('approve', req.id || req.RequestID)} className="h-8 text-primary hover:bg-primary/10"><CheckCircle2 className="h-4 w-4" /></Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleAction('decline', req.id || req.RequestID)} 
+                      className="h-8 px-2 text-destructive border-destructive/20 hover:bg-destructive/10"
+                    >
+                      <XCircle className="h-4 w-4 mr-1" /> Decline
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleAction('approve', req.id || req.RequestID)} 
+                      className="h-8 px-2 text-primary border-primary/20 hover:bg-primary/10"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" /> Approve
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -144,7 +168,7 @@ export default function SalesManagerHub() {
             {topPerformers.map((rep, i) => {
               const attainment = (rep.achievement / rep.target) * 100;
               return (
-                <div key={rep.id} className="flex items-center gap-3">
+                <div key={rep.id} className="flex items-center gap-3 cursor-pointer hover:bg-muted/30 p-1 rounded-md transition-colors" onClick={() => router.push('/performance')}>
                   <div className="text-xs font-bold text-muted-foreground w-4">{i + 1}</div>
                   <div className="flex-1">
                     <div className="text-xs font-bold">{rep.name}</div>

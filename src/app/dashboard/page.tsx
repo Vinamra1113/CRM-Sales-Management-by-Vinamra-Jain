@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { 
   BarChart, 
   Bar, 
@@ -25,13 +26,16 @@ import {
   Users, 
   ArrowUpRight, 
   ArrowDownRight,
-  Activity
+  Activity,
+  ChevronLeft
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 const regionalData = [
@@ -58,9 +62,18 @@ const competitiveData = [
 ]
 
 export default function ExecutiveDashboard() {
+  const router = useRouter()
+  const { toast } = useToast()
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2 mb-2">
+          <Button variant="ghost" size="sm" onClick={() => router.back()} className="h-8 w-8 p-0">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Return</span>
+        </div>
         <h1 className="text-3xl font-bold tracking-tight">Leadership Insights</h1>
         <p className="text-muted-foreground font-body">Global business performance and real-time revenue analytics.</p>
       </div>
@@ -191,10 +204,14 @@ export default function ExecutiveDashboard() {
                 { client: "Vertex Dynamics", action: "Executive Briefing", status: "Scheduled", color: "bg-muted" },
                 { client: "Horizon Lab", action: "Account Expansion", status: "Closed-Won", color: "bg-green-500" },
               ].map((item, i) => (
-                <div key={i} className="flex items-center p-4 hover:bg-muted/30 transition-colors cursor-pointer">
+                <div 
+                  key={i} 
+                  className="flex items-center p-4 hover:bg-muted/30 transition-all cursor-pointer group"
+                  onClick={() => toast({ title: "Opening Interaction", description: `Loading meeting notes for ${item.client}...` })}
+                >
                   <div className={cn("h-2 w-2 rounded-full mr-4", item.color)} />
                   <div className="flex-1">
-                    <div className="text-sm font-semibold">{item.client}</div>
+                    <div className="text-sm font-semibold group-hover:text-primary transition-colors">{item.client}</div>
                     <div className="text-xs text-muted-foreground">{item.action}</div>
                   </div>
                   <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-tighter opacity-70">

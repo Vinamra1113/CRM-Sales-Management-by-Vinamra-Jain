@@ -3,6 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { 
   Users, 
   Layers, 
@@ -13,7 +14,8 @@ import {
   Activity as ActivityIcon,
   Target,
   Mail,
-  Phone
+  Phone,
+  ChevronLeft
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +23,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
 import { 
   Dialog, 
   DialogContent, 
@@ -37,13 +38,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { useFirestore, useCollection } from "@/firebase"
-import { collection, addDoc } from "firebase/firestore"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 import { SALES_REPS, OPPORTUNITIES, CONTACTS, CUSTOMERS, SALES_ACTIVITIES } from "@/lib/data"
 
 export default function SalesRepresentativeHub() {
+  const router = useRouter()
   const { toast } = useToast()
   const db = useFirestore()
-  const { data: activities = [] } = useCollection<any>(db ? collection(db, "activities") : null)
+  const { data: dbActivities = [] } = useCollection<any>(db ? collection(db, "activities") : null)
   const [isActivityOpen, setIsActivityOpen] = React.useState(false)
 
   const currentUser = SALES_REPS[0]; // SR001 Allison Hill
@@ -62,26 +66,41 @@ export default function SalesRepresentativeHub() {
     if (!db) return
 
     const formData = new FormData(e.currentTarget)
-    try {
-      await addDoc(collection(db, "activities"), {
-        repId: currentUser.id,
-        customerId: formData.get("customerId"),
-        type: formData.get("type"),
-        notes: formData.get("notes"),
-        date: new Date().toISOString().split('T')[0],
-        status: "Completed"
-      })
-      setIsActivityOpen(false)
-      toast({ title: "Activity Logged", description: "Interaction synced to account timeline." })
-    } catch (err) {
-      toast({ title: "Log Failed", variant: "destructive" })
+    const payload = {
+      repId: currentUser.id,
+      customerId: formData.get("customerId"),
+      type: formData.get("type"),
+      notes: formData.get("notes"),
+      date: new Date().toISOString().split('T')[0],
+      status: "Completed",
+      createdAt: serverTimestamp()
     }
+
+    addDoc(collection(db, "activities"), payload)
+      .then(() => {
+        setIsActivityOpen(false)
+        toast({ title: "Activity Logged", description: "Interaction synced to account timeline." })
+      })
+      .catch(async (err) => {
+        const permsError = new FirestorePermissionError({
+          path: 'activities',
+          operation: 'create',
+          requestResourceData: payload
+        });
+        errorEmitter.emit('permission-error', permsError);
+      });
   }
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="h-8 w-8 p-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Back to Roles</span>
+          </div>
           <h1 className="text-3xl font-bold font-headline">Welcome back, {currentUser.name}</h1>
           <p className="text-muted-foreground">Region: {currentUser.region} • Performance Score: {currentUser.score}</p>
         </div>
@@ -150,7 +169,7 @@ export default function SalesRepresentativeHub() {
         {[
           { label: "Quota Attainment", value: `${quotaPercent.toFixed(1)}%`, sub: "MTD Progress", icon: Target, color: "text-accent" },
           { label: "Pipeline Value", value: `$${(totalPipelineValue / 1000).toFixed(0)}k`, sub: `${userOpps.length} active deals`, icon: Layers, color: "text-primary" },
-          { label: "Logged Activities", value: activities.length > 0 ? activities.length.toString() : SALES_ACTIVITIES.length.toString(), sub: "Lifetime count", icon: ActivityIcon, color: "text-accent" },
+          { label: "Recent Activities", value: (dbActivities.length + SALES_ACTIVITIES.length).toString(), sub: "Lifetime count", icon: ActivityIcon, color: "text-accent" },
           { label: "Monthly Target", value: `$${currentUser.target.toLocaleString()}`, sub: "Revised Jan 1", icon: TrendingUp, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl shadow-black/5">
@@ -179,10 +198,14 @@ export default function SalesRepresentativeHub() {
           </CardHeader>
           <CardContent className="space-y-4">
             {userOpps.sort((a, b) => b.probability - a.probability).slice(0, 5).map((opp) => (
-              <div key={opp.id} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:border-primary/30 transition-all cursor-pointer">
+              <div 
+                key={opp.id} 
+                onClick={() => router.push('/pipeline')}
+                className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:border-primary/30 hover:bg-card/80 transition-all cursor-pointer group"
+              >
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold">{opp.product}</h4>
+                    <h4 className="text-sm font-bold group-hover:text-primary transition-colors">{opp.product}</h4>
                     <Badge variant="outline" className="text-[9px] h-4 border-none bg-muted">{opp.stage}</Badge>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
