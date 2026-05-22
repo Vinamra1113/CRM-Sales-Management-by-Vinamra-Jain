@@ -9,8 +9,6 @@ import {
   Clock, 
   CheckCircle2, 
   XCircle, 
-  ChevronRight,
-  TrendingDown,
   Percent
 } from "lucide-react"
 
@@ -19,8 +17,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
+import { DISCOUNTS, CUSTOMERS, LEADS } from "@/lib/data"
 
 export default function LeadOrchestrator() {
+  const pendingDiscounts = DISCOUNTS.filter(d => d.status === 'Pending');
+
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
@@ -36,28 +37,25 @@ export default function LeadOrchestrator() {
               <CardDescription>Review and approve sales representative quote variations.</CardDescription>
             </div>
             <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest text-primary border-primary/20 bg-primary/5">
-              4 Pending
+              {pendingDiscounts.length} Pending
             </Badge>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
-              {[
-                { rep: "Alex Rivera", deal: "Project Phoenix", margin: 42, discount: 15, value: "$120,000", status: "Critical" },
-                { rep: "Sarah Miller", deal: "Alpha Rollout", margin: 28, discount: 5, value: "$45,000", status: "Low" },
-                { rep: "James Wu", deal: "Database Cloud", margin: 35, discount: 12, value: "$280,000", status: "Medium" },
-              ].map((req, i) => (
-                <div key={i} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 hover:bg-muted/20 transition-all group">
+              {pendingDiscounts.map((req) => (
+                <div key={req.id} className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 hover:bg-muted/20 transition-all group">
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm">{req.deal}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-medium">via {req.rep}</span>
+                      <span className="font-bold text-sm">
+                        {CUSTOMERS.find(c => c.id === req.customerId)?.name || "Unknown Deal"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-medium">via {req.repName}</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       <div className="flex items-center gap-1 text-accent font-code">
-                        <Percent className="h-3 w-3" /> {req.discount}% Discount
+                        <Percent className="h-3 w-3" /> {req.percent}% Discount
                       </div>
-                      <div className="text-muted-foreground">Margin: {req.margin}%</div>
-                      <div className="font-bold">{req.value}</div>
+                      <div className="text-muted-foreground">Requested: {req.date}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 w-full md:w-auto">
@@ -119,10 +117,10 @@ export default function LeadOrchestrator() {
             </div>
             <div className="p-3 rounded-lg border border-border/10 bg-muted/5 opacity-50 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold">Weighted Experience</span>
-                <Badge variant="outline" className="text-[8px] border-none">DISABLED</Badge>
+                <span className="text-xs font-bold">Lead Velocity</span>
+                <Badge variant="outline" className="text-[8px] border-none">{LEADS.length} Total</Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">Leads distributed based on historical conversion rate and tenure.</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">Leads processed based on historical conversion rate and tenure.</p>
             </div>
             <Button variant="ghost" className="w-full text-xs font-bold text-accent">Edit Automation Logic</Button>
           </CardContent>

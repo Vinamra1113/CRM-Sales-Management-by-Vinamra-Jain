@@ -50,6 +50,58 @@ export type Opportunity = {
   probability: number;
 };
 
+export type Campaign = {
+  id: string;
+  name: string;
+  type: string;
+  budget: number;
+  leadsGenerated: number;
+  roi: number;
+};
+
+export type Lead = {
+  id: string;
+  source: string;
+  assignedRep: string;
+  score: number;
+  status: string;
+  date: string;
+};
+
+export type DiscountRequest = {
+  id: string;
+  repName: string;
+  customerId: string;
+  percent: number;
+  status: 'Approved' | 'Pending' | 'Rejected';
+  date: string;
+};
+
+export type AccountPlan = {
+  id: string;
+  customerId: string;
+  goal: string;
+  targetRevenue: number;
+  reviewDate: string;
+};
+
+export type Renewal = {
+  id: string;
+  customerId: string;
+  endDate: string;
+  reminderDate: string;
+  status: 'Pending' | 'Renewed' | 'Upcoming';
+};
+
+export type Feedback = {
+  id: string;
+  customerId: string;
+  product: string;
+  category: string;
+  text: string;
+  satisfaction: string;
+};
+
 export const SALES_REPS: SalesRep[] = [
   { id: "SR001", name: "Allison Hill", region: "North", target: 56556, achievement: 92097, score: 69.8 },
   { id: "SR002", name: "Noah Rhodes", region: "South", target: 76868, achievement: 162964, score: 63.48 },
@@ -103,283 +155,61 @@ export const CUSTOMERS: Customer[] = [
   { id: "CUST0022", name: "Brown Inc", industry: "Manufacturing", region: "Central", revenue: 4065051, since: "2023-05-23", manager: "Gina Moore", satisfaction: 4.5 },
   { id: "CUST0023", name: "Hall, Robinson and Jones", industry: "Retail", region: "South", revenue: 891262, since: "2023-10-03", manager: "Daniel Wagner", satisfaction: 4.1 },
   { id: "CUST0024", name: "Perez Inc", industry: "Healthcare", region: "West", revenue: 3548575, since: "2025-09-12", manager: "Dylan Miller", satisfaction: 4.7 },
-  { id: "CUST0025", name: "Jones-Young", industry: "IT", region: "North", revenue: 608455, since: "2024-01-29", manager: "Lisa Hensley", satisfaction: 4.3 },
-  { id: "CUST0026", name: "Lewis-Anderson", industry: "IT", region: "South", revenue: 1707174, since: "2026-05-06", manager: "Abigail Shaffer", satisfaction: 3.8 },
-  { id: "CUST0027", name: "Johnston, Sanchez and Kennedy", industry: "Finance", region: "West", revenue: 1639209, since: "2021-11-06", manager: "Gabrielle Davis", satisfaction: 3.7 },
-  { id: "CUST0028", name: "Davis Ltd", industry: "IT", region: "West", revenue: 4716463, since: "2022-01-20", manager: "Daniel Wagner", satisfaction: 2.6 },
-  { id: "CUST0029", name: "Henderson-Owens", industry: "Manufacturing", region: "North", revenue: 882344, since: "2024-08-03", manager: "Matthew Foster", satisfaction: 4.6 },
-  { id: "CUST0030", name: "Nunez Ltd", industry: "Finance", region: "West", revenue: 4173853, since: "2019-03-23", manager: "Brian Ramirez", satisfaction: 3 },
-  { id: "CUST0031", name: "Powell LLC", industry: "Retail", region: "North", revenue: 1481076, since: "2025-03-13", manager: "Lisa Hensley", satisfaction: 2.5 },
-  { id: "CUST0032", name: "Wright and Sons", industry: "Retail", region: "East", revenue: 3916886, since: "2022-12-13", manager: "Ryan Munoz", satisfaction: 3.6 },
-  { id: "CUST0033", name: "Taylor-White", industry: "Education", region: "Central", revenue: 4182495, since: "2022-04-28", manager: "Cristian Santos", satisfaction: 3 },
-  { id: "CUST0034", name: "Baxter Inc", industry: "Finance", region: "North", revenue: 4958516, since: "2022-02-26", manager: "Tommy Walter", satisfaction: 3.9 },
-  { id: "CUST0035", name: "Garcia, Pearson and Fernandez", industry: "Education", region: "East", revenue: 579537, since: "2018-07-06", manager: "Noah Rhodes", satisfaction: 4 },
-  { id: "CUST0036", name: "House and Sons", industry: "Manufacturing", region: "Central", revenue: 1420641, since: "2019-10-20", manager: "Noah Rhodes", satisfaction: 4.9 },
-  { id: "CUST0037", name: "Tucker-Lewis", industry: "IT", region: "South", revenue: 674798, since: "2021-10-18", manager: "Carla Gray", satisfaction: 2.7 },
-  { id: "CUST0038", name: "Martin Inc", industry: "Finance", region: "West", revenue: 1105681, since: "2021-09-15", manager: "Lisa Jackson", satisfaction: 3.1 },
-  { id: "CUST0039", name: "House-Glover", industry: "Manufacturing", region: "North", revenue: 787726, since: "2020-10-24", manager: "Michele Williams", satisfaction: 4.1 },
-  { id: "CUST0040", name: "Horton-Cross", industry: "Manufacturing", region: "Central", revenue: 2753902, since: "2025-01-18", manager: "Gabrielle Davis", satisfaction: 3 },
-  { id: "CUST0041", name: "Stanley, Tucker and Lee", industry: "Education", region: "East", revenue: 2102242, since: "2020-03-28", manager: "Gabrielle Davis", satisfaction: 3.5 },
-  { id: "CUST0042", name: "Riley PLC", industry: "Education", region: "East", revenue: 3935477, since: "2018-11-27", manager: "Monica Herrera", satisfaction: 4.8 },
-  { id: "CUST0043", name: "Edwards, Williams and Woods", industry: "IT", region: "North", revenue: 3944377, since: "2026-03-17", manager: "Carla Gray", satisfaction: 5 },
-  { id: "CUST0044", name: "Moore, Yu and Miller", industry: "IT", region: "North", revenue: 4610004, since: "2019-12-20", manager: "Abigail Shaffer", satisfaction: 3.8 },
-  { id: "CUST0045", name: "Larson Ltd", industry: "Finance", region: "East", revenue: 677063, since: "2025-09-19", manager: "Gina Moore", satisfaction: 3.4 },
-  { id: "CUST0046", name: "Powell PLC", industry: "Finance", region: "West", revenue: 4656842, since: "2020-06-24", manager: "Ethan Adams", satisfaction: 3.3 },
-  { id: "CUST0047", name: "Wheeler, Harvey and Barnes", industry: "Education", region: "Central", revenue: 165624, since: "2023-05-09", manager: "Patty Perez", satisfaction: 4.5 },
-  { id: "CUST0048", name: "Mills, Donovan and Harris", industry: "Healthcare", region: "North", revenue: 1226515, since: "2024-06-24", manager: "Gabrielle Davis", satisfaction: 2.8 },
-  { id: "CUST0049", name: "Allen-Foster", industry: "IT", region: "Central", revenue: 1403991, since: "2024-02-06", manager: "Gabrielle Davis", satisfaction: 3.2 },
-  { id: "CUST0050", name: "Evans, Stewart and Walton", industry: "Finance", region: "East", revenue: 1807898, since: "2019-01-02", manager: "Patty Perez", satisfaction: 4.1 },
-  { id: "CUST0051", name: "Ellis PLC", industry: "Healthcare", region: "Central", revenue: 4198102, since: "2019-03-28", manager: "Gabrielle Davis", satisfaction: 4.8 },
-  { id: "CUST0052", name: "Medina PLC", industry: "IT", region: "North", revenue: 3653211, since: "2020-08-22", manager: "Gabrielle Davis", satisfaction: 2.6 },
-  { id: "CUST0053", name: "Mahoney Inc", industry: "Healthcare", region: "South", revenue: 2297440, since: "2025-11-12", manager: "Connie Lawrence", satisfaction: 4.4 },
-  { id: "CUST0054", name: "Wood and Sons", industry: "Manufacturing", region: "West", revenue: 4805227, since: "2022-02-11", manager: "Allison Hill", satisfaction: 2.8 },
-  { id: "CUST0055", name: "Warner, Carr and Archer", industry: "Education", region: "South", revenue: 4676743, since: "2023-12-13", manager: "Noah Rhodes", satisfaction: 4.6 },
-  { id: "CUST0056", name: "Smith, Montoya and Evans", industry: "Manufacturing", region: "Central", revenue: 1342300, since: "2024-01-12", manager: "Michele Williams", satisfaction: 2.8 },
-  { id: "CUST0057", name: "Mcmillan and Sons", industry: "Healthcare", region: "East", revenue: 434662, since: "2020-08-20", manager: "Jamie Arnold", satisfaction: 3 },
-  { id: "CUST0058", name: "Preston Ltd", industry: "Finance", region: "North", revenue: 3066871, since: "2023-02-03", manager: "Matthew Foster", satisfaction: 3.9 },
-  { id: "CUST0059", name: "Nelson PLC", industry: "Retail", region: "Central", revenue: 1396487, since: "2020-03-06", manager: "Gina Moore", satisfaction: 4.7 },
-  { id: "CUST0060", name: "Cooper, Watts and Farrell", industry: "Finance", region: "West", revenue: 307923, since: "2022-09-08", manager: "Connie Lawrence", satisfaction: 4.3 },
-  { id: "CUST0061", name: "King-Odonnell", industry: "Healthcare", region: "West", revenue: 2181777, since: "2018-10-26", manager: "Gabrielle Davis", satisfaction: 2.9 },
-  { id: "CUST0062", name: "Walters LLC", industry: "Education", region: "North", revenue: 3308992, since: "2018-10-05", manager: "Noah Rhodes", satisfaction: 4.6 },
-  { id: "CUST0063", name: "Cook and Sons", industry: "Finance", region: "South", revenue: 3961303, since: "2023-10-22", manager: "Jamie Arnold", satisfaction: 3.3 },
-  { id: "CUST0064", name: "Martin-Ramos", industry: "Finance", region: "South", revenue: 298511, since: "2024-05-22", manager: "Patty Perez", satisfaction: 3 },
-  { id: "CUST0065", name: "Hoffman-Rodriguez", industry: "Healthcare", region: "East", revenue: 682343, since: "2025-11-24", manager: "Matthew Foster", satisfaction: 3.2 },
-  { id: "CUST0066", name: "Mckee, Gardner and Davenport", industry: "Education", region: "Central", revenue: 3452745, since: "2023-05-05", manager: "Patty Perez", satisfaction: 5 },
-  { id: "CUST0067", name: "Hernandez, Anderson and Parker", industry: "Manufacturing", region: "East", revenue: 331530, since: "2026-01-13", manager: "Daniel Wagner", satisfaction: 4.7 },
-  { id: "CUST0068", name: "Nolan and Sons", industry: "Healthcare", region: "South", revenue: 4970339, since: "2024-03-10", manager: "Gabrielle Davis", satisfaction: 2.6 },
-  { id: "CUST0069", name: "Estrada LLC", industry: "Manufacturing", region: "West", revenue: 2999833, since: "2025-01-08", manager: "Tommy Walter", satisfaction: 4.5 },
-  { id: "CUST0070", name: "Henson, Russell and Oliver", industry: "Retail", region: "Central", revenue: 4390127, since: "2019-09-14", manager: "Daniel Wagner", satisfaction: 3.5 },
-  { id: "CUST0071", name: "Hancock and Sons", industry: "Manufacturing", region: "South", revenue: 2236767, since: "2025-11-19", manager: "Noah Rhodes", satisfaction: 4.3 },
-  { id: "CUST0072", name: "Johnson-Doyle", industry: "IT", region: "Central", revenue: 4616862, since: "2021-03-19", manager: "Patty Perez", satisfaction: 4.3 },
-  { id: "CUST0073", name: "Pham-Shields", industry: "Education", region: "South", revenue: 3155311, since: "2025-04-13", manager: "Michele Williams", satisfaction: 2.7 },
-  { id: "CUST0074", name: "Adams Ltd", industry: "Education", region: "East", revenue: 2733315, since: "2019-04-22", manager: "Patty Perez", satisfaction: 4.6 },
-  { id: "CUST0075", name: "Brennan-Garrison", industry: "Education", region: "East", revenue: 4354051, since: "2020-04-12", manager: "Ryan Munoz", satisfaction: 4.2 },
-  { id: "CUST0076", name: "Velasquez Group", industry: "Healthcare", region: "West", revenue: 2580135, since: "2021-05-12", manager: "Derek Zuniga", satisfaction: 2.8 },
-  { id: "CUST0077", name: "Hoover-Savage", industry: "Retail", region: "West", revenue: 1559847, since: "2020-04-13", manager: "Carla Gray", satisfaction: 3.9 },
-  { id: "CUST0078", name: "Keller Group", industry: "Retail", region: "Central", revenue: 103405, since: "2021-03-06", manager: "Ryan Munoz", satisfaction: 3.2 },
-  { id: "CUST0079", name: "Lin-Rasmussen", industry: "Retail", region: "Central", revenue: 2803222, since: "2020-10-05", manager: "Dylan Miller", satisfaction: 3.6 },
-  { id: "CUST0080", name: "May-Ross", industry: "Education", region: "South", revenue: 4388038, since: "2025-07-25", manager: "Brian Ramirez", satisfaction: 4.5 },
-  { id: "CUST0081", name: "Rivera, Johnson and Wiley", industry: "Education", region: "South", revenue: 811316, since: "2020-08-10", manager: "Ryan Munoz", satisfaction: 3.8 },
-  { id: "CUST0082", name: "Carpenter LLC", industry: "Education", region: "Central", revenue: 2911762, since: "2018-09-17", manager: "Angie Henderson", satisfaction: 4.5 },
-  { id: "CUST0083", name: "Carlson LLC", industry: "Finance", region: "East", revenue: 1984422, since: "2024-08-01", manager: "Abigail Shaffer", satisfaction: 2.9 },
-  { id: "CUST0084", name: "Graham-Joyce", industry: "IT", region: "South", revenue: 4085732, since: "2019-05-16", manager: "Carla Gray", satisfaction: 4.6 },
-  { id: "CUST0085", name: "Lam-Lee", industry: "IT", region: "West", revenue: 3576583, since: "2018-10-06", manager: "Margaret Hawkins DDS", satisfaction: 3.9 },
-  { id: "CUST0086", name: "Graham, Meyer and Drake", industry: "Education", region: "West", revenue: 4247136, since: "2024-03-24", manager: "Lisa Hensley", satisfaction: 3.1 },
-  { id: "CUST0087", name: "Bentley, Mclaughlin and Gonzalez", industry: "Education", region: "North", revenue: 994119, since: "2022-01-20", manager: "Matthew Foster", satisfaction: 3.6 },
-  { id: "CUST0088", name: "Rush LLC", industry: "Finance", region: "Central", revenue: 3996926, since: "2023-09-09", manager: "Noah Rhodes", satisfaction: 3.9 },
-  { id: "CUST0089", name: "Alvarado-Martinez", industry: "IT", region: "West", revenue: 1218529, since: "2026-01-16", manager: "Dylan Miller", satisfaction: 4.2 },
-  { id: "CUST0090", name: "Hunter-Estrada", industry: "Manufacturing", region: "Central", revenue: 2761688, since: "2021-02-28", manager: "Matthew Foster", satisfaction: 4.7 },
-  { id: "CUST0091", name: "Terry-Spencer", industry: "Manufacturing", region: "Central", revenue: 3679760, since: "2020-01-08", manager: "Derek Zuniga", satisfaction: 3.6 },
-  { id: "CUST0092", name: "Ortega-Gray", industry: "Finance", region: "West", revenue: 3875458, since: "2024-10-01", manager: "Gabrielle Davis", satisfaction: 4.4 },
-  { id: "CUST0093", name: "Gilbert LLC", industry: "Education", region: "East", revenue: 4472979, since: "2021-11-03", manager: "Brian Ramirez", satisfaction: 4.1 },
-  { id: "CUST0094", name: "Bass, Torres and Clark", industry: "Healthcare", region: "West", revenue: 749977, since: "2025-01-26", manager: "Ethan Adams", satisfaction: 3.2 },
-  { id: "CUST0095", name: "Lawson, Morris and Ramos", industry: "Healthcare", region: "East", revenue: 2781918, since: "2024-02-19", manager: "Derek Zuniga", satisfaction: 2.7 },
-  { id: "CUST0096", name: "Dixon Ltd", industry: "Finance", region: "South", revenue: 3313132, since: "2019-10-31", manager: "Ethan Adams", satisfaction: 2.9 },
-  { id: "CUST0097", name: "Miller, Robertson and Schultz", industry: "Finance", region: "North", revenue: 3580164, since: "2021-03-28", manager: "Michele Williams", satisfaction: 3.3 },
-  { id: "CUST0098", name: "Cardenas and Sons", industry: "Retail", region: "West", revenue: 622322, since: "2024-02-10", manager: "Abigail Shaffer", satisfaction: 4.6 },
-  { id: "CUST0099", name: "Walker-Gonzalez", industry: "Retail", region: "Central", revenue: 263845, since: "2018-08-05", manager: "Matthew Foster", satisfaction: 3.9 },
-  { id: "CUST0100", name: "Sanchez Group", industry: "Retail", region: "North", revenue: 3050766, since: "2023-08-03", manager: "Ryan Munoz", satisfaction: 4.4 },
-  { id: "CUST0101", name: "Gibson Ltd", industry: "Retail", region: "Central", revenue: 4681289, since: "2023-04-14", manager: "Carla Gray", satisfaction: 4.7 },
-  { id: "CUST0102", name: "Higgins Group", industry: "Retail", region: "South", revenue: 2389547, since: "2022-08-04", manager: "Michele Williams", satisfaction: 3.7 },
-  { id: "CUST0103", name: "Sanchez-Douglas", industry: "Retail", region: "East", revenue: 3491654, since: "2018-06-08", manager: "Tommy Walter", satisfaction: 2.9 },
-  { id: "CUST0104", name: "Osborne and Sons", industry: "Retail", region: "South", revenue: 4580553, since: "2019-11-19", manager: "Allison Hill", satisfaction: 4.8 },
-  { id: "CUST0105", name: "Holmes, Williams and Wright", industry: "Manufacturing", region: "Central", revenue: 327348, since: "2025-08-08", manager: "Angie Henderson", satisfaction: 4.1 },
-  { id: "CUST0106", name: "Bryant Group", industry: "Finance", region: "West", revenue: 1624453, since: "2024-01-25", manager: "Noah Rhodes", satisfaction: 3.2 },
-  { id: "CUST0107", name: "Travis, Larson and Dodson", industry: "Healthcare", region: "South", revenue: 3914294, since: "2025-12-20", manager: "Monica Herrera", satisfaction: 3.3 },
-  { id: "CUST0108", name: "Salazar-Ball", industry: "Retail", region: "East", revenue: 3636342, since: "2022-09-06", manager: "Gabrielle Davis", satisfaction: 4.6 },
-  { id: "CUST0109", name: "Rivas-Kelley", industry: "Retail", region: "North", revenue: 4624974, since: "2026-01-07", manager: "Noah Rhodes", satisfaction: 5 },
-  { id: "CUST0110", name: "Manning Group", industry: "Healthcare", region: "South", revenue: 675612, since: "2022-03-20", manager: "Matthew Foster", satisfaction: 4.9 },
-  { id: "CUST0111", name: "Walton-Larsen", industry: "IT", region: "North", revenue: 2174362, since: "2020-09-29", manager: "Abigail Shaffer", satisfaction: 4.6 },
-  { id: "CUST0112", name: "Washington, Allen and Gonzales", industry: "Manufacturing", region: "South", revenue: 2101060, since: "2024-06-15", manager: "Cristian Santos", satisfaction: 3.7 },
-  { id: "CUST0113", name: "Young-Rogers", industry: "IT", region: "Central", revenue: 1928419, since: "2025-12-25", manager: "Dylan Miller", satisfaction: 4.2 },
-  { id: "CUST0114", name: "Miller, Hernandez and Reyes", industry: "Healthcare", region: "South", revenue: 1060771, since: "2019-09-08", manager: "Matthew Foster", satisfaction: 4.5 },
-  { id: "CUST0115", name: "Lewis, Perry and Rivera", industry: "Healthcare", region: "North", revenue: 4954359, since: "2022-05-08", manager: "Allison Hill", satisfaction: 4.8 },
-  { id: "CUST0116", name: "Brown-Wall", industry: "Manufacturing", region: "West", revenue: 3427378, since: "2021-09-13", manager: "Ethan Adams", satisfaction: 3 },
-  { id: "CUST0117", name: "Shah, Smith and Gilmore", industry: "Manufacturing", region: "South", revenue: 954810, since: "2023-04-14", manager: "Ethan Adams", satisfaction: 4.4 },
-  { id: "CUST0118", name: "Woods-Bender", industry: "Education", region: "Central", revenue: 1115483, since: "2020-12-04", manager: "Lisa Jackson", satisfaction: 4.5 },
-  { id: "CUST0119", name: "Castaneda-Ashley", industry: "Healthcare", region: "Central", revenue: 3693495, since: "2021-12-13", manager: "Patty Perez", satisfaction: 3.4 },
-  { id: "CUST0120", name: "Adkins, Payne and Morrison", industry: "Manufacturing", region: "East", revenue: 206133, since: "2020-04-06", manager: "Michele Williams", satisfaction: 4.6 },
-  { id: "CUST0121", name: "Robinson-Graham", industry: "IT", region: "West", revenue: 3138253, since: "2018-08-20", manager: "Margaret Hawkins DDS", satisfaction: 4.7 },
-  { id: "CUST0122", name: "Rogers-Shelton", industry: "Retail", region: "South", revenue: 3753130, since: "2021-10-29", manager: "Connie Lawrence", satisfaction: 4.3 },
-  { id: "CUST0123", name: "Martin, Mcdonald and Anderson", industry: "Education", region: "East", revenue: 4614521, since: "2023-09-06", manager: "Matthew Foster", satisfaction: 3.7 },
-  { id: "CUST0124", name: "Johnson, Long and Elliott", industry: "Retail", region: "Central", revenue: 2351464, since: "2018-08-14", manager: "Monica Herrera", satisfaction: 4.6 },
-  { id: "CUST0125", name: "Day and Sons", industry: "IT", region: "East", revenue: 3881601, since: "2025-10-05", manager: "Gina Moore", satisfaction: 4.4 },
-  { id: "CUST0126", name: "White-Green", industry: "Manufacturing", region: "Central", revenue: 3279192, since: "2021-03-04", manager: "Monica Herrera", satisfaction: 2.6 },
-  { id: "CUST0127", name: "Gibson LLC", industry: "Healthcare", region: "South", revenue: 4189865, since: "2024-11-11", manager: "Abigail Shaffer", satisfaction: 3.4 },
-  { id: "CUST0128", name: "Ramirez-Bean", industry: "Healthcare", region: "East", revenue: 2445945, since: "2021-12-21", manager: "Carla Gray", satisfaction: 4.3 },
-  { id: "CUST0129", name: "Conley-Ruiz", industry: "Healthcare", region: "Central", revenue: 185153, since: "2024-10-04", manager: "Holly Wood", satisfaction: 4.9 },
-  { id: "CUST0130", name: "Williams, Crane and Walker", industry: "IT", region: "South", revenue: 3509366, since: "2018-12-21", manager: "Brian Ramirez", satisfaction: 3.9 },
-  { id: "CUST0131", name: "Williams, Johnson and Wright", industry: "Finance", region: "West", revenue: 4217307, since: "2025-07-11", manager: "Dylan Miller", satisfaction: 4.5 },
-  { id: "CUST0132", name: "Howell and Sons", industry: "IT", region: "East", revenue: 1958885, since: "2019-06-18", manager: "Lisa Hensley", satisfaction: 4.2 },
-  { id: "CUST0133", name: "Caldwell-Elliott", industry: "Healthcare", region: "Central", revenue: 3195567, since: "2020-03-29", manager: "Brian Ramirez", satisfaction: 3.9 },
-  { id: "CUST0134", name: "Lyons-Wang", industry: "Healthcare", region: "West", revenue: 4716993, since: "2019-10-25", manager: "Monica Herrera", satisfaction: 3.4 },
-  { id: "CUST0135", name: "Lawson, Adkins and Wilson", industry: "Retail", region: "East", revenue: 2672140, since: "2025-05-10", manager: "Gabrielle Davis", satisfaction: 3.1 },
-  { id: "CUST0136", name: "Oconnell Inc", industry: "Education", region: "South", revenue: 2747008, since: "2023-04-23", manager: "Daniel Wagner", satisfaction: 4.4 },
-  { id: "CUST0137", name: "Hickman PLC", industry: "Education", region: "South", revenue: 1706762, since: "2024-02-24", manager: "Abigail Shaffer", satisfaction: 4.3 },
-  { id: "CUST0138", name: "Sanders-Espinoza", industry: "Healthcare", region: "Central", revenue: 4500973, since: "2019-01-13", manager: "Carla Gray", satisfaction: 3.2 },
-  { id: "CUST0139", name: "Vaughn, Burton and Garcia", industry: "IT", region: "South", revenue: 2585095, since: "2024-12-16", manager: "Gina Moore", satisfaction: 3.4 },
-  { id: "CUST0140", name: "Jefferson-Burke", industry: "Healthcare", region: "North", revenue: 4580649, since: "2019-06-02", manager: "Cristian Santos", satisfaction: 3.2 },
-  { id: "CUST0141", name: "Patton, Reed and Patterson", industry: "IT", region: "Central", revenue: 2550619, since: "2021-07-16", manager: "Ethan Adams", satisfaction: 4.9 },
-  { id: "CUST0142", name: "Hunter LLC", industry: "Education", region: "West", revenue: 960567, since: "2018-06-30", manager: "Allison Hill", satisfaction: 3.9 },
-  { id: "CUST0143", name: "Short-Garcia", industry: "Retail", region: "West", revenue: 3794920, since: "2021-06-20", manager: "Monica Herrera", satisfaction: 3 },
-  { id: "CUST0144", name: "Snow, Stevens and Hernandez", industry: "IT", region: "East", revenue: 4107482, since: "2019-11-20", manager: "Daniel Wagner", satisfaction: 4.6 },
-  { id: "CUST0145", name: "Boyd, Santos and Gilbert", industry: "Retail", region: "West", revenue: 721446, since: "2026-03-18", manager: "Lisa Jackson", satisfaction: 4.1 },
-  { id: "CUST0146", name: "Hampton, Marshall and Petersen", industry: "IT", region: "South", revenue: 1351560, since: "2023-06-05", manager: "Lisa Jackson", satisfaction: 4.9 },
-  { id: "CUST0147", name: "Morris-Sanchez", industry: "IT", region: "South", revenue: 1093643, since: "2026-05-03", manager: "Derek Zuniga", satisfaction: 4.4 },
-  { id: "CUST0148", name: "Ramirez Group", industry: "Manufacturing", region: "Central", revenue: 1993200, since: "2020-06-17", manager: "Matthew Foster", satisfaction: 3.8 },
-  { id: "CUST0149", name: "Hudson-Barnett", industry: "Retail", region: "West", revenue: 2594378, since: "2021-04-01", manager: "Lisa Jackson", satisfaction: 5 },
-  { id: "CUST0150", name: "Snyder LLC", industry: "Healthcare", region: "Central", revenue: 605248, since: "2019-12-07", manager: "Carla Gray", satisfaction: 4.9 },
-  { id: "CUST0151", name: "Lewis-Salinas", industry: "IT", region: "South", revenue: 1870207, since: "2021-04-13", manager: "Gabrielle Davis", satisfaction: 4.2 },
-  { id: "CUST0152", name: "Beard-Haynes", industry: "Finance", region: "South", revenue: 1558053, since: "2020-09-26", manager: "Derek Zuniga", satisfaction: 2.7 },
-  { id: "CUST0153", name: "Smith, Vaughan and Miller", industry: "IT", region: "West", revenue: 3879098, since: "2024-07-06", manager: "Ethan Adams", satisfaction: 4 },
-  { id: "CUST0154", name: "Freeman-Chang", industry: "Healthcare", region: "North", revenue: 2041763, since: "2024-04-05", manager: "Ryan Munoz", satisfaction: 4.3 },
-  { id: "CUST0155", name: "Brewer-Henry", industry: "Education", region: "West", revenue: 697099, since: "2025-02-17", manager: "Patty Perez", satisfaction: 3.1 },
-  { id: "CUST0156", name: "Davis and Sons", industry: "Healthcare", region: "Central", revenue: 1759427, since: "2021-10-29", manager: "Michele Williams", satisfaction: 2.8 },
-  { id: "CUST0157", name: "Sanchez, Beck and Wood", industry: "Finance", region: "South", revenue: 2328286, since: "2023-02-04", manager: "Cristian Santos", satisfaction: 2.7 },
-  { id: "CUST0158", name: "Cooper, Barajas and Pierce", industry: "Finance", region: "East", revenue: 4874854, since: "2021-05-19", manager: "Ryan Munoz", satisfaction: 3.6 },
-  { id: "CUST0159", name: "Chavez, Parker and Hall", industry: "Retail", region: "East", revenue: 3476486, since: "2024-07-09", manager: "Gabrielle Davis", satisfaction: 3.8 },
-  { id: "CUST0160", name: "Stewart Ltd", industry: "Retail", region: "West", revenue: 774795, since: "2022-12-11", manager: "Carla Gray", satisfaction: 2.6 },
-  { id: "CUST0161", name: "Lopez, Robinson and Washington", industry: "Retail", region: "East", revenue: 2200238, since: "2024-07-20", manager: "Allison Hill", satisfaction: 2.7 },
-  { id: "CUST0162", name: "Bray, Warren and Campbell", industry: "Education", region: "Central", revenue: 274025, since: "2019-03-30", manager: "Matthew Foster", satisfaction: 4.2 },
-  { id: "CUST0163", name: "Phillips LLC", industry: "Healthcare", region: "Central", revenue: 437487, since: "2019-11-30", manager: "Matthew Foster", satisfaction: 4.4 },
-  { id: "CUST0164", name: "Smith-Ferguson", industry: "Retail", region: "Central", revenue: 3809689, since: "2020-09-20", manager: "Gabrielle Davis", satisfaction: 3 },
-  { id: "CUST0165", name: "Mccann PLC", industry: "Manufacturing", region: "West", revenue: 4224894, since: "2020-11-14", manager: "Angie Henderson", satisfaction: 3.7 },
-  { id: "CUST0166", name: "Raymond, Little and Mullins", industry: "Retail", region: "East", revenue: 2793231, since: "2019-04-05", manager: "Patty Perez", satisfaction: 2.8 },
-  { id: "CUST0167", name: "Andrews Group", industry: "Finance", region: "East", revenue: 3553129, since: "2022-06-17", manager: "Ethan Adams", satisfaction: 3.7 },
-  { id: "CUST0168", name: "Peterson-Sheppard", industry: "Education", region: "West", revenue: 4714544, since: "2020-07-14", manager: "Noah Rhodes", satisfaction: 3.6 },
-  { id: "CUST0169", name: "Wilson-Jones", industry: "Healthcare", region: "East", revenue: 2811817, since: "2022-07-27", manager: "Daniel Wagner", satisfaction: 4.9 },
-  { id: "CUST0170", name: "Ray Ltd", industry: "Retail", region: "Central", revenue: 109655, since: "2018-11-04", manager: "Patty Perez", satisfaction: 4.7 },
-  { id: "CUST0171", name: "Hernandez PLC", industry: "Retail", region: "West", revenue: 554696, since: "2020-12-20", manager: "Abigail Shaffer", satisfaction: 3.8 },
-  { id: "CUST0172", name: "Mcknight Inc", industry: "Manufacturing", region: "West", revenue: 3808108, since: "2023-02-18", manager: "Matthew Foster", satisfaction: 2.6 },
-  { id: "CUST0173", name: "Obrien-Gibbs", industry: "Healthcare", region: "Central", revenue: 1199018, since: "2020-04-22", manager: "Ryan Munoz", satisfaction: 3.6 },
-  { id: "CUST0174", name: "James, Kerr and Evans", industry: "Education", region: "West", revenue: 1118595, since: "2023-05-24", manager: "Allison Hill", satisfaction: 4.9 },
-  { id: "CUST0175", name: "Torres-Oliver", industry: "Manufacturing", region: "South", revenue: 1428572, since: "2023-07-29", manager: "Ryan Munoz", satisfaction: 3.9 },
-  { id: "CUST0176", name: "Garcia, Farmer and Garrett", industry: "Manufacturing", region: "West", revenue: 881895, since: "2020-08-21", manager: "Gina Moore", satisfaction: 5 },
-  { id: "CUST0177", name: "Miller, Allen and Arnold", industry: "IT", region: "West", revenue: 1085377, since: "2019-09-20", manager: "Margaret Hawkins DDS", satisfaction: 4.6 },
-  { id: "CUST0178", name: "Ortiz Ltd", industry: "Retail", region: "East", revenue: 4368727, since: "2023-06-09", manager: "Ethan Adams", satisfaction: 3.2 },
-  { id: "CUST0179", name: "Carter-Hall", industry: "Retail", region: "West", revenue: 2144563, since: "2024-05-26", manager: "Dylan Miller", satisfaction: 3.9 },
-  { id: "CUST0180", name: "Warner-Gibson", industry: "Retail", region: "South", revenue: 4363433, since: "2024-03-26", manager: "Tommy Walter", satisfaction: 4.7 },
-  { id: "CUST0181", name: "Bradshaw Ltd", industry: "IT", region: "East", revenue: 3580789, since: "2023-05-28", manager: "Monica Herrera", satisfaction: 4.8 },
-  { id: "CUST0182", name: "Lara, Gonzalez and Wilson", industry: "Manufacturing", region: "East", revenue: 121518, since: "2020-04-19", manager: "Ryan Munoz", satisfaction: 4.3 },
-  { id: "CUST0183", name: "Hernandez, Baker and Thomas", industry: "Manufacturing", region: "Central", revenue: 4207400, since: "2018-11-23", manager: "Cristian Santos", satisfaction: 3.6 },
-  { id: "CUST0184", name: "Sparks PLC", industry: "Retail", region: "East", revenue: 2888708, since: "2024-10-03", manager: "Derek Zuniga", satisfaction: 4.4 },
-  { id: "CUST0185", name: "Morse, Gonzales and Harrison", industry: "Retail", region: "West", revenue: 2799264, since: "2020-12-21", manager: "Abigail Shaffer", satisfaction: 5 },
-  { id: "CUST0186", name: "Powell, Nelson and Fernandez", industry: "Finance", region: "Central", revenue: 3312592, since: "2022-02-10", manager: "Gina Moore", satisfaction: 4.6 },
-  { id: "CUST0187", name: "George Group", industry: "Retail", region: "North", revenue: 2769056, since: "2024-08-20", manager: "Tommy Walter", satisfaction: 3.7 },
-  { id: "CUST0188", name: "Munoz-Johnson", industry: "Retail", region: "West", revenue: 1375951, since: "2020-05-02", manager: "Brian Ramirez", satisfaction: 4.9 },
-  { id: "CUST0189", name: "Huff, Johnston and Sampson", industry: "Finance", region: "Central", revenue: 2884973, since: "2024-11-22", manager: "Daniel Wagner", satisfaction: 4.7 },
-  { id: "CUST0190", name: "Underwood, Johnston and Hines", industry: "Retail", region: "North", revenue: 4511997, since: "2019-11-17", manager: "Dylan Miller", satisfaction: 2.5 },
-  { id: "CUST0191", name: "Stone-Ramos", industry: "Finance", region: "West", revenue: 1394875, since: "2020-10-02", manager: "Angie Henderson", satisfaction: 3.7 },
-  { id: "CUST0192", name: "Shea Group", industry: "Healthcare", region: "East", revenue: 3434331, since: "2023-10-15", manager: "Margaret Hawkins DDS", satisfaction: 2.7 },
-  { id: "CUST0193", name: "Costa-Harrison", industry: "Healthcare", region: "Central", revenue: 3287749, since: "2021-11-10", manager: "Monica Herrera", satisfaction: 4.1 },
-  { id: "CUST0194", name: "Morris-Garcia", industry: "Retail", region: "Central", revenue: 401143, since: "2019-10-03", manager: "Carla Gray", satisfaction: 2.7 },
-  { id: "CUST0195", name: "Jenkins-Simpson", industry: "Education", region: "East", revenue: 2008293, since: "2024-01-09", manager: "Tommy Walter", satisfaction: 2.7 },
-  { id: "CUST0196", name: "Cervantes-Pierce", industry: "IT", region: "North", revenue: 3821845, since: "2022-04-04", manager: "Connie Lawrence", satisfaction: 4.2 },
-  { id: "CUST0197", name: "Edwards LLC", industry: "IT", region: "North", revenue: 2821051, since: "2019-05-17", manager: "Noah Rhodes", satisfaction: 3.2 },
-  { id: "CUST0198", name: "Hancock-Bryan", industry: "Healthcare", region: "West", revenue: 1321127, since: "2018-05-25", manager: "Gina Moore", satisfaction: 3.8 },
-  { id: "CUST0199", name: "Booth, Murray and Brown", industry: "Manufacturing", region: "South", revenue: 1525926, since: "2022-10-18", manager: "Connie Lawrence", satisfaction: 2.7 },
-  { id: "CUST0200", name: "Dean-Jimenez", industry: "Retail", region: "Central", revenue: 2120226, since: "2022-02-23", manager: "Brian Ramirez", satisfaction: 4.8 },
-  { id: "CUST0201", name: "Harris PLC", industry: "Finance", region: "South", revenue: 3968405, since: "2019-07-03", manager: "Margaret Hawkins DDS", satisfaction: 3.1 },
-  { id: "CUST0202", name: "Kim-Wolfe", industry: "Healthcare", region: "North", revenue: 4002827, since: "2019-06-03", manager: "Ryan Munoz", satisfaction: 4.2 },
-  { id: "CUST0203", name: "Dudley PLC", industry: "Finance", region: "North", revenue: 3805497, since: "2025-03-09", manager: "Jamie Arnold", satisfaction: 5 },
-  { id: "CUST0204", name: "Mckinney LLC", industry: "Healthcare", region: "West", revenue: 2197975, since: "2023-01-27", manager: "Dylan Miller", satisfaction: 4.6 },
-  { id: "CUST0205", name: "Tran Inc", industry: "Finance", region: "West", revenue: 4153443, since: "2020-04-19", manager: "Daniel Wagner", satisfaction: 3.1 },
-  { id: "CUST0206", name: "Murray Inc", industry: "Manufacturing", region: "East", revenue: 4921871, since: "2023-11-24", manager: "Ryan Munoz", satisfaction: 5 },
-  { id: "CUST0207", name: "Jimenez Ltd", industry: "Healthcare", region: "North", revenue: 3420259, since: "2020-11-13", manager: "Gabrielle Davis", satisfaction: 2.5 },
-  { id: "CUST0208", name: "Thornton, Perry and Olson", industry: "Education", region: "North", revenue: 4266850, since: "2022-05-28", manager: "Ryan Munoz", satisfaction: 4.4 },
-  { id: "CUST0209", name: "Bryant and Sons", industry: "Finance", region: "Central", revenue: 3055482, since: "2021-08-25", manager: "Gina Moore", satisfaction: 4.1 },
-  { id: "CUST0210", name: "Weeks PLC", industry: "Manufacturing", region: "East", revenue: 1247387, since: "2024-09-25", manager: "Margaret Hawkins DDS", satisfaction: 2.7 },
-  { id: "CUST0211", name: "Shields LLC", industry: "Education", region: "North", revenue: 2691516, since: "2024-12-16", manager: "Dylan Miller", satisfaction: 2.6 },
-  { id: "CUST0212", name: "Morgan-French", industry: "Healthcare", region: "South", revenue: 856093, since: "2020-08-29", manager: "Ryan Munoz", satisfaction: 3.3 },
-  { id: "CUST0213", name: "Campbell LLC", industry: "Retail", region: "South", revenue: 1784388, since: "2025-07-05", manager: "Cristian Santos", satisfaction: 4.5 },
-  { id: "CUST0214", name: "Carpenter, Keller and Grimes", industry: "Healthcare", region: "Central", revenue: 4309359, since: "2022-03-09", manager: "Gabrielle Davis", satisfaction: 4.6 },
-  { id: "CUST0215", name: "Washington, Cook and Hines", industry: "Healthcare", region: "West", revenue: 2575825, since: "2021-08-05", manager: "Tommy Walter", satisfaction: 4.7 },
-  { id: "CUST0216", name: "Cantu-Kane", industry: "IT", region: "West", revenue: 731656, since: "2024-04-27", manager: "Cristian Santos", satisfaction: 4.4 },
-  { id: "CUST0217", name: "Armstrong and Sons", industry: "Finance", region: "West", revenue: 4775077, since: "2025-09-01", manager: "Jamie Arnold", satisfaction: 2.7 },
-  { id: "CUST0218", name: "Williams-Garner", industry: "Retail", region: "North", revenue: 2318439, since: "2024-05-21", manager: "Derek Zuniga", satisfaction: 2.8 },
-  { id: "CUST0219", name: "Hughes-Alvarado", industry: "Healthcare", region: "East", revenue: 3296273, since: "2025-05-14", manager: "Margaret Hawkins DDS", satisfaction: 4.9 },
-  { id: "CUST0220", name: "Pollard, Simpson and Johnson", industry: "IT", region: "South", revenue: 4055034, since: "2022-08-29", manager: "Allison Hill", satisfaction: 4 },
-  { id: "CUST0221", name: "Rivera, Garcia and Kirk", industry: "Manufacturing", region: "East", revenue: 1956962, since: "2019-03-27", manager: "Margaret Hawkins DDS", satisfaction: 2.7 },
-  { id: "CUST0222", name: "Lozano, Smith and Thomas", industry: "Retail", region: "East", revenue: 3525033, since: "2025-10-17", manager: "Daniel Wagner", satisfaction: 2.8 },
-  { id: "CUST0223", name: "Booker, Jones and Harrington", industry: "IT", region: "East", revenue: 4232434, since: "2020-08-22", manager: "Daniel Wagner", satisfaction: 2.7 },
-  { id: "CUST0224", name: "Hanson-Sanders", industry: "Manufacturing", region: "South", revenue: 3360197, since: "2019-01-26", manager: "Dylan Miller", satisfaction: 3.4 },
-  { id: "CUST0225", name: "Phelps-Villarreal", industry: "Education", region: "Central", revenue: 3615890, since: "2021-08-14", manager: "Lisa Jackson", satisfaction: 4.4 },
-  { id: "CUST0226", name: "Sims-Clay", industry: "Finance", region: "West", revenue: 930653, since: "2022-07-16", manager: "Brian Ramirez", satisfaction: 4 },
-  { id: "CUST0227", name: "Johnson, Jones and Welch", industry: "Healthcare", region: "North", revenue: 3208230, since: "2026-03-22", manager: "Abigail Shaffer", satisfaction: 3.6 },
-  { id: "CUST0228", name: "Bright-Francis", industry: "Finance", region: "East", revenue: 933446, since: "2022-01-29", manager: "Patty Perez", satisfaction: 3.4 },
-  { id: "CUST0229", name: "Hodges Ltd", industry: "Education", region: "East", revenue: 607930, since: "2025-10-23", manager: "Lisa Hensley", satisfaction: 3.2 },
-  { id: "CUST0230", name: "Wallace Ltd", industry: "IT", region: "West", revenue: 869012, since: "2020-12-07", manager: "Patty Perez", satisfaction: 3 },
-  { id: "CUST0231", name: "Williams Inc", industry: "Education", region: "Central", revenue: 279159, since: "2020-11-18", manager: "Noah Rhodes", satisfaction: 4.5 },
-  { id: "CUST0232", name: "Brooks-Thomas", industry: "Finance", region: "South", revenue: 4836023, since: "2022-11-27", manager: "Abigail Shaffer", satisfaction: 2.7 },
-  { id: "CUST0233", name: "Knight-Sparks", industry: "Manufacturing", region: "South", revenue: 1911531, since: "2019-11-01", manager: "Gina Moore", satisfaction: 3.3 },
-  { id: "CUST0234", name: "Miller Group", industry: "Finance", region: "Central", revenue: 123786, since: "2023-08-29", manager: "Gabrielle Davis", satisfaction: 4.6 },
-  { id: "CUST0235", name: "Allen, Durham and Thomas", industry: "Finance", region: "South", revenue: 4631655, since: "2022-04-23", manager: "Gabrielle Davis", satisfaction: 4.5 },
-  { id: "CUST0236", name: "King, Scott and Smith", industry: "IT", region: "North", revenue: 1205645, since: "2025-03-25", manager: "Allison Hill", satisfaction: 3.4 },
-  { id: "CUST0237", name: "Santana-Byrd", industry: "Finance", region: "Central", revenue: 2815991, since: "2019-09-24", manager: "Allison Hill", satisfaction: 2.9 },
-  { id: "CUST0238", name: "Alexander LLC", industry: "IT", region: "South", revenue: 3631273, since: "2023-05-21", manager: "Holly Wood", satisfaction: 2.8 },
-  { id: "CUST0239", name: "Fowler-Coleman", industry: "IT", region: "West", revenue: 3860405, since: "2020-07-07", manager: "Matthew Foster", satisfaction: 3.4 },
-  { id: "CUST0240", name: "Bruce-Gonzalez", industry: "Manufacturing", region: "North", revenue: 3891696, since: "2021-08-29", manager: "Holly Wood", satisfaction: 3.1 },
-  { id: "CUST0241", name: "Rodriguez-James", industry: "Manufacturing", region: "North", revenue: 4474249, since: "2021-06-10", manager: "Ryan Munoz", satisfaction: 3.6 },
-  { id: "CUST0242", name: "Phillips, Lyons and Johnson", industry: "IT", region: "North", revenue: 4117991, since: "2025-06-12", manager: "Lisa Hensley", satisfaction: 3.6 },
-  { id: "CUST0243", name: "Foster, Smith and Grimes", industry: "IT", region: "West", revenue: 3820870, since: "2025-01-03", manager: "Angie Henderson", satisfaction: 4.7 },
-  { id: "CUST0244", name: "Beltran, Lozano and Mcgee", industry: "Healthcare", region: "Central", revenue: 1344314, since: "2025-06-21", manager: "Angie Henderson", satisfaction: 2.8 },
-  { id: "CUST0245", name: "Parsons-Hall", industry: "Manufacturing", region: "Central", revenue: 4699947, since: "2025-03-17", manager: "Ethan Adams", satisfaction: 3.3 },
-  { id: "CUST0246", name: "Robinson-Lee", industry: "Manufacturing", region: "Central", revenue: 2573781, since: "2020-07-08", manager: "Dylan Miller", satisfaction: 3.8 },
-  { id: "CUST0247", name: "Campos, Saunders and Becker", industry: "Retail", region: "North", revenue: 1059774, since: "2019-07-20", manager: "Margaret Hawkins DDS", satisfaction: 4.1 },
-  { id: "CUST0248", name: "Davis, Burton and Williams", industry: "Manufacturing", region: "South", revenue: 3707688, since: "2025-02-04", manager: "Dylan Miller", satisfaction: 4.7 },
-  { id: "CUST0249", name: "Johnson-Diaz", industry: "Retail", region: "East", revenue: 3904224, since: "2019-07-04", manager: "Lisa Hensley", satisfaction: 3.5 },
-  { id: "CUST0250", name: "Browning LLC", industry: "IT", region: "East", revenue: 3679955, since: "2024-09-29", manager: "Monica Herrera", satisfaction: 4.2 }
+  { id: "CUST0025", name: "Jones-Young", industry: "IT", region: "North", revenue: 608455, since: "2024-01-29", manager: "Lisa Hensley", satisfaction: 4.3 }
+];
+
+export const CAMPAIGNS: Campaign[] = [
+  { id: "CAMP001", name: "Paid Ads Campaign 1", type: "Webinar", budget: 24472, leadsGenerated: 217, roi: 1.61 },
+  { id: "CAMP002", name: "Webinar Campaign 2", type: "Social Media", budget: 71619, leadsGenerated: 349, roi: 4.49 },
+  { id: "CAMP003", name: "Social Media Campaign 3", type: "Email", budget: 66691, leadsGenerated: 454, roi: 3.49 },
+  { id: "CAMP004", name: "Email Campaign 4", type: "Social Media", budget: 71665, leadsGenerated: 248, roi: 3.88 },
+  { id: "CAMP005", name: "Paid Ads Campaign 5", type: "Webinar", budget: 70350, leadsGenerated: 315, roi: 2.59 },
+  { id: "CAMP006", name: "Webinar Campaign 6", type: "Webinar", budget: 73875, leadsGenerated: 405, roi: 2.67 },
+  { id: "CAMP007", name: "SEO Campaign 7", type: "SEO", budget: 40171, leadsGenerated: 347, roi: 2.3 },
+  { id: "CAMP008", name: "Paid Ads Campaign 8", type: "Email", budget: 32158, leadsGenerated: 162, roi: 4.53 },
+  { id: "CAMP009", name: "SEO Campaign 9", type: "Social Media", budget: 56891, leadsGenerated: 161, roi: 1.88 },
+  { id: "CAMP010", name: "SEO Campaign 10", type: "Paid Ads", budget: 25605, leadsGenerated: 481, roi: 2.18 }
+];
+
+export const LEADS: Lead[] = [
+  { id: "LEAD0001", source: "Email Campaign 52", assignedRep: "Margaret Hawkins DDS", score: 41, status: "New", date: "2026-03-26" },
+  { id: "LEAD0002", source: "SEO Campaign 50", assignedRep: "Abigail Shaffer", score: 59, status: "Qualified", date: "2026-02-14" },
+  { id: "LEAD0003", source: "SEO Campaign 9", assignedRep: "Patty Perez", score: 36, status: "Contacted", date: "2025-09-27" },
+  { id: "LEAD0004", source: "Webinar Campaign 6", assignedRep: "Angie Henderson", score: 28, status: "Converted", date: "2026-03-01" },
+  { id: "LEAD0005", source: "Webinar Campaign 39", assignedRep: "Matthew Foster", score: 77, status: "Converted", date: "2025-06-08" }
+];
+
+export const DISCOUNTS: DiscountRequest[] = [
+  { id: "DISC0001", repName: "Abigail Shaffer", customerId: "CUST0008", percent: 16, status: "Approved", date: "2025-06-28" },
+  { id: "DISC0002", repName: "Abigail Shaffer", customerId: "CUST0008", percent: 15, status: "Approved", date: "2025-09-23" },
+  { id: "DISC0003", repName: "Gina Moore", customerId: "CUST0022", percent: 28, status: "Pending", date: "2025-09-25" },
+  { id: "DISC0004", repName: "Cristian Santos", customerId: "CUST0003", percent: 13, status: "Rejected", date: "2025-09-30" }
+];
+
+export const ACCOUNT_PLANS: AccountPlan[] = [
+  { id: "PLAN0001", customerId: "CUST0001", goal: "Offer position his.", targetRevenue: 759513, reviewDate: "2027-04-05" },
+  { id: "PLAN0002", customerId: "CUST0002", goal: "Bring three indeed laugh.", targetRevenue: 872937, reviewDate: "2026-07-08" },
+  { id: "PLAN0003", customerId: "CUST0003", goal: "Second wrong including weight.", targetRevenue: 961243, reviewDate: "2026-09-06" }
+];
+
+export const RENEWALS: Renewal[] = [
+  { id: "REN0001", customerId: "CUST0001", endDate: "2027-11-28", reminderDate: "2027-04-15", status: "Pending" },
+  { id: "REN0002", customerId: "CUST0002", endDate: "2026-09-28", reminderDate: "2026-11-25", status: "Renewed" },
+  { id: "REN0003", customerId: "CUST0003", endDate: "2028-01-28", reminderDate: "2026-11-22", status: "Renewed" }
+];
+
+export const FEEDBACK: Feedback[] = [
+  { id: "FDB0001", customerId: "CUST0001", product: "CloudSync", category: "Performance", text: "Agency rock however simply policy least husband option.", satisfaction: "Unsatisfied" },
+  { id: "FDB0002", customerId: "CUST0002", product: "AI Assistant", category: "Bug", text: "Action recognize crime poor beat house stage college.", satisfaction: "Satisfied" },
+  { id: "FDB0003", customerId: "CUST0003", product: "AI Assistant", category: "Usability", text: "Drop fish movement career game live let its window.", satisfaction: "Unsatisfied" }
 ];
 
 export const CONTACTS: Contact[] = [
-  { id: "CONT0001", customerId: "CUST0096", name: "Curtis Buchanan", email: "maria47@yahoo.com", phone: "001-517-123-6851x6048", jobTitle: "Community pharmacist", lastInteraction: "2025-11-13" },
-  { id: "CONT0002", customerId: "CUST0245", name: "Paul Baker", email: "daniel37@gmail.com", phone: "+1-859-317-4612x004", jobTitle: "Research officer, government", lastInteraction: "2025-07-05" },
-  { id: "CONT0003", customerId: "CUST0040", name: "Stephen Taylor", email: "ellen86@hotmail.com", phone: "001-261-796-4053x7735", jobTitle: "Child psychotherapist", lastInteraction: "2026-02-11" },
-  { id: "CONT0004", customerId: "CUST0176", name: "Steven Newman", email: "hhill@davis-lewis.org", phone: "0532931839", jobTitle: "Engineer, technical sales", lastInteraction: "2026-04-01" },
-  { id: "CONT0005", customerId: "CUST0237", name: "Erin Hernandez", email: "michele22@king.com", phone: "(053)950-2402", jobTitle: "Pharmacist, community", lastInteraction: "2025-12-11" },
-  { id: "CONT0006", customerId: "CUST0122", name: "Arthur West", email: "hayesjeffrey@hotmail.com", phone: "8470076617", jobTitle: "Producer, radio", lastInteraction: "2025-06-18" },
-  { id: "CONT0007", customerId: "CUST0018", name: "Erica Hernandez", email: "claudia98@nguyen.info", phone: "961.183.6736x57661", jobTitle: "Intelligence analyst", lastInteraction: "2025-11-02" },
-  { id: "CONT0008", customerId: "CUST0024", name: "David Mckay", email: "davischristopher@yahoo.com", phone: "528-098-8516", jobTitle: "Manufacturing systems engineer", lastInteraction: "2026-04-25" },
-  { id: "CONT0009", customerId: "CUST0213", name: "Nicole Parrish", email: "caroline51@romero.com", phone: "(851)493-6899x809", jobTitle: "Geologist, engineering", lastInteraction: "2025-06-01" },
-  { id: "CONT0010", customerId: "CUST0022", name: "Michael Parker", email: "adam29@hotmail.com", phone: "(120)183-6675x2545", jobTitle: "Tax inspector", lastInteraction: "2026-01-07" },
-  { id: "CONT0011", customerId: "CUST0024", name: "Anthony Moore", email: "nelsonebony@lawson-perry.com", phone: "001-815-614-9784x03690", jobTitle: "Actor", lastInteraction: "2025-08-08" },
-  { id: "CONT0012", customerId: "CUST0111", name: "Daniel Taylor", email: "mark07@hotmail.com", phone: "(226)838-8516x06071", jobTitle: "Intelligence analyst", lastInteraction: "2025-12-30" },
-  { id: "CONT0013", customerId: "CUST0025", name: "Jared Bowman", email: "sullivantammy@gmail.com", phone: "+1-751-613-6968x164", jobTitle: "Librarian, academic", lastInteraction: "2025-08-15" },
-  { id: "CONT0014", customerId: "CUST0191", name: "Christopher Dixon", email: "rebeccabailey@mullen.com", phone: "(432)921-2779", jobTitle: "TEFL teacher", lastInteraction: "2025-11-11" },
-  { id: "CONT0015", customerId: "CUST0190", name: "Sonia Day", email: "edward17@yahoo.com", phone: "+1-449-058-1477x0054", jobTitle: "Camera operator", lastInteraction: "2026-01-26" }
-];
-
-export const ACTIVITIES: SalesActivity[] = [
-  { id: "ACT00001", repId: "SR023", customerId: "CUST0022", type: "Follow-up", date: "2025-12-26", status: "In Progress", notes: "Whole today Congress out conference never song but." },
-  { id: "ACT00002", repId: "SR002", customerId: "CUST0064", type: "Demo", date: "2024-08-29", status: "Pending", notes: "Deal claim none surface alone woman media hair name institution war a feel." },
-  { id: "ACT00003", repId: "SR017", customerId: "CUST0134", type: "Follow-up", date: "2025-06-28", status: "In Progress", notes: "Process knowledge officer reason mission worry goal Mrs decide." },
-  { id: "ACT00004", repId: "SR012", customerId: "CUST0096", type: "Email", date: "2024-08-05", status: "Pending", notes: "Down could feel strategy whatever own." },
-  { id: "ACT00005", repId: "SR014", customerId: "CUST0199", type: "Email", date: "2024-11-04", status: "Open", notes: "Grow campaign performance avoid effort high tough hundred bar effect international reason movie." },
-  { id: "ACT00011", repId: "SR020", customerId: "CUST0182", type: "Call", date: "2025-09-29", status: "Completed", notes: "Religious eat participant religious consumer worry sometimes maybe every into." },
-  { id: "ACT00014", repId: "SR021", customerId: "CUST0172", type: "Demo", date: "2026-05-15", status: "Completed", notes: "Look middle your thousand recently if pattern." },
-  { id: "ACT00030", repId: "SR009", customerId: "CUST0014", type: "Demo", date: "2026-02-09", status: "Completed", notes: "Sea open painting draw every once beautiful blood picture own." },
-  { id: "ACT00032", repId: "SR010", customerId: "CUST0022", type: "Meeting", date: "2024-08-28", status: "Completed", notes: "Industry represent through service suffer night girl hand." }
+  { id: "CONT0001", customerId: "CUST0001", name: "Curtis Buchanan", email: "maria47@yahoo.com", phone: "001-517-123-6851x6048", jobTitle: "Community pharmacist", lastInteraction: "2025-11-13" },
+  { id: "CONT0002", customerId: "CUST0002", name: "Paul Baker", email: "daniel37@gmail.com", phone: "+1-859-317-4612x004", jobTitle: "Research officer, government", lastInteraction: "2025-07-05" }
 ];
 
 export const OPPORTUNITIES: Opportunity[] = [
-  { id: "OPP0001", customerId: "CUST0233", repId: "SR014", product: "Sales Booster", stage: "Qualified", value: 485830, closeDate: "2026-07-30", probability: 30 },
-  { id: "OPP0002", customerId: "CUST0018", repId: "SR011", product: "Sales Booster", stage: "Closed Won", value: 382194, closeDate: "2026-08-29", probability: 25 },
-  { id: "OPP0003", customerId: "CUST0082", repId: "SR006", product: "CRM Suite", stage: "Qualified", value: 406308, closeDate: "2026-09-16", probability: 50 },
-  { id: "OPP0004", customerId: "CUST0247", repId: "SR014", product: "CloudSync", stage: "Negotiation", value: 237261, closeDate: "2026-06-20", probability: 91 },
-  { id: "OPP0005", customerId: "CUST0071", repId: "SR024", product: "Analytics Pro", stage: "Qualified", value: 60978, closeDate: "2026-08-11", probability: 26 },
-  { id: "OPP0006", customerId: "CUST0007", repId: "SR006", product: "Sales Booster", stage: "Closed Won", value: 144912, closeDate: "2026-08-25", probability: 87 },
-  { id: "OPP0007", customerId: "CUST0157", repId: "SR019", product: "Sales Booster", stage: "Qualified", value: 126730, closeDate: "2027-01-06", probability: 39 },
-  { id: "OPP0008", customerId: "CUST0007", repId: "SR022", product: "CRM Suite", stage: "Proposal", value: 365784, closeDate: "2026-09-25", probability: 71 },
-  { id: "OPP0009", customerId: "CUST0129", repId: "SR005", product: "AI Assistant", stage: "Closed Won", value: 378303, closeDate: "2026-09-18", probability: 93 },
-  { id: "OPP0010", customerId: "CUST0048", repId: "SR012", product: "AI Assistant", stage: "Negotiation", value: 253432, closeDate: "2026-11-09", probability: 27 },
-  { id: "OPP0011", customerId: "CUST0050", repId: "SR006", product: "CRM Suite", stage: "Qualified", value: 219218, closeDate: "2026-12-28", probability: 11 },
-  { id: "OPP0012", customerId: "CUST0244", repId: "SR009", product: "Analytics Pro", stage: "Negotiation", value: 394213, closeDate: "2026-09-02", probability: 95 },
-  { id: "OPP0013", customerId: "CUST0194", repId: "SR007", product: "CRM Suite", stage: "Qualified", value: 97839, closeDate: "2026-06-12", probability: 66 },
-  { id: "OPP0014", customerId: "CUST0126", repId: "SR020", product: "CloudSync", stage: "Closed Lost", value: 459439, closeDate: "2027-02-21", probability: 68 },
-  { id: "OPP0015", customerId: "CUST0110", repId: "SR008", product: "CRM Suite", stage: "Negotiation", value: 323730, closeDate: "2026-10-14", probability: 58 },
-  { id: "OPP0016", customerId: "CUST0081", repId: "SR024", product: "Sales Booster", stage: "Negotiation", value: 497379, closeDate: "2026-09-01", probability: 83 },
-  { id: "OPP0017", customerId: "CUST0138", repId: "SR020", product: "CRM Suite", stage: "Closed Won", value: 277970, closeDate: "2027-03-02", probability: 23 },
-  { id: "OPP0018", customerId: "CUST0117", repId: "SR015", product: "Analytics Pro", stage: "Prospecting", value: 276949, closeDate: "2027-03-07", probability: 78 },
-  { id: "OPP0019", customerId: "CUST0189", repId: "SR013", product: "Sales Booster", stage: "Prospecting", value: 208108, closeDate: "2026-10-10", probability: 76 },
-  { id: "OPP0020", customerId: "CUST0162", repId: "SR025", product: "Analytics Pro", stage: "Prospecting", value: 157661, closeDate: "2026-08-13", probability: 66 }
+  { id: "OPP0001", customerId: "CUST0001", repId: "SR014", product: "Sales Booster", stage: "Qualified", value: 485830, closeDate: "2026-07-30", probability: 30 },
+  { id: "OPP0002", customerId: "CUST0002", repId: "SR011", product: "Sales Booster", stage: "Closed Won", value: 382194, closeDate: "2026-08-29", probability: 25 }
 ];

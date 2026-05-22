@@ -6,22 +6,18 @@ import Link from "next/link"
 import { 
   BarChart3, 
   Send, 
-  Users, 
-  Target, 
   Zap, 
   Globe, 
-  ArrowUpRight,
   TrendingUp,
   MessageSquare,
   FileText,
   Plus,
-  Image as ImageIcon
+  ArrowUpRight
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { 
   Dialog, 
   DialogContent, 
@@ -35,10 +31,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { CAMPAIGNS, LEADS } from "@/lib/data"
 
 export default function MarketingHub() {
   const { toast } = useToast()
   const [isCampaignOpen, setIsCampaignOpen] = React.useState(false)
+
+  const avgROI = (CAMPAIGNS.reduce((acc, c) => acc + c.roi, 0) / CAMPAIGNS.length).toFixed(1);
+  const totalLeads = LEADS.length;
 
   const handleCreateCampaign = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,7 +57,7 @@ export default function MarketingHub() {
           <p className="text-muted-foreground">Campaign ROI tracking and sales-marketing alignment loops.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Shared", description: "84 qualified leads exported to Representative workspace." })}>
+          <Button variant="outline" className="border-border/50 gap-2" onClick={() => toast({ title: "Leads Shared", description: `${totalLeads} qualified leads exported to Representative workspace.` })}>
             <Send className="h-4 w-4" /> Share Leads
           </Button>
           
@@ -94,9 +94,9 @@ export default function MarketingHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Campaign ROI", value: "3.4x", sub: "+12% this Q", icon: TrendingUp, color: "text-accent" },
-          { label: "Qualified Leads", value: "142", sub: "+24 today", icon: Zap, color: "text-primary" },
-          { label: "Ad Performance", value: "Excellent", sub: "CTR up by 5%", icon: Globe, color: "text-accent" },
+          { label: "Avg Campaign ROI", value: `${avgROI}x`, sub: "Across all active", icon: TrendingUp, color: "text-accent" },
+          { label: "Qualified Leads", value: totalLeads.toString(), sub: "In current pipeline", icon: Zap, color: "text-primary" },
+          { label: "Active Programs", value: CAMPAIGNS.length.toString(), sub: "Live data feed", icon: Globe, color: "text-accent" },
           { label: "Sync Status", value: "Optimal", sub: "Sales loop active", icon: MessageSquare, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -119,23 +119,17 @@ export default function MarketingHub() {
             <CardDescription>Performance tracking for multi-channel sales support programs.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {[
-              { name: "Q1 Enterprise Push", status: "Active", leads: 84, conversion: 12 },
-              { name: "APAC Expansion Sweep", status: "Paused", leads: 42, conversion: 8 },
-              { name: "Social Proof Wave", status: "Planning", leads: 0, conversion: 0 },
-            ].map((camp, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50">
+            {CAMPAIGNS.slice(0, 5).map((camp) => (
+              <div key={camp.id} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold">{camp.name}</h4>
-                    <Badge variant="outline" className={cn(
-                      "text-[9px] h-4 border-none",
-                      camp.status === "Active" ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
-                    )}>{camp.status}</Badge>
+                    <Badge variant="outline" className="text-[9px] h-4 border-none bg-accent/10 text-accent">{camp.type}</Badge>
                   </div>
                   <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-                    <span>Leads: {camp.leads}</span>
-                    <span>Conv: {camp.conversion}%</span>
+                    <span>Leads: {camp.leadsGenerated}</span>
+                    <span>ROI: {camp.roi}x</span>
+                    <span className="font-code text-accent">Budget: ${camp.budget.toLocaleString()}</span>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" className="h-8 w-8"><ArrowUpRight className="h-4 w-4" /></Button>
@@ -146,25 +140,23 @@ export default function MarketingHub() {
 
         <Card className="border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Sales Content Collab</CardTitle>
+            <CardTitle className="text-lg font-headline">Qualified Leads Shared</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-xs text-muted-foreground mb-4 italic">Collaborate with sales on assets that actually close.</div>
-            {[
-              { name: "Enterprise Case Study v2", stage: "Draft", owner: "Alex R" },
-              { name: "Competitive Battlecard", stage: "In Review", owner: "Sarah M" },
-              { name: "Product FAQ Deck", stage: "Ready", owner: "Self" },
-            ].map((doc, i) => (
-              <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer border border-border/20">
-                <FileText className="h-4 w-4 text-primary" />
-                <div className="flex-1 overflow-hidden">
-                  <div className="text-xs font-bold truncate">{doc.name}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase">{doc.stage} • {doc.owner}</div>
+            {LEADS.map((lead) => (
+              <div key={lead.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer border border-border/20">
+                <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                  {lead.score}
                 </div>
+                <div className="flex-1 overflow-hidden">
+                  <div className="text-xs font-bold truncate">{lead.assignedRep}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase">{lead.source} • {lead.status}</div>
+                </div>
+                <Badge variant="outline" className="text-[8px] opacity-60">Score</Badge>
               </div>
             ))}
-            <Button variant="outline" className="w-full text-xs font-bold mt-2" onClick={() => toast({ title: "Request Sent", description: "Design team has been notified of the content gap." })}>
-              Request Asset
+            <Button variant="outline" className="w-full text-xs font-bold mt-2" onClick={() => toast({ title: "Lead Ledger Open", description: "Navigating to lead database." })}>
+              Lead Repository
             </Button>
           </CardContent>
         </Card>

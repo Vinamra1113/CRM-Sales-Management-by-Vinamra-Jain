@@ -8,7 +8,6 @@ import {
   Bell, 
   History, 
   Smile, 
-  ChevronRight, 
   Calendar, 
   AlertTriangle,
   FileText,
@@ -28,9 +27,13 @@ import {
 } from "@/components/ui/sheet"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { ACCOUNT_PLANS, RENEWALS, CUSTOMERS } from "@/lib/data"
 
 export default function AccountManagerHub() {
   const { toast } = useToast()
+
+  const avgHealth = (CUSTOMERS.reduce((acc, c) => acc + c.satisfaction, 0) / CUSTOMERS.length).toFixed(1);
+  const pendingRenewals = RENEWALS.filter(r => r.status === 'Pending').length;
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
@@ -52,20 +55,14 @@ export default function AccountManagerHub() {
                 <SheetDescription>Overview of active growth strategies for your primary book of business.</SheetDescription>
               </SheetHeader>
               <div className="py-6 space-y-6">
-                {[
-                  { name: "CyberDyne Systems", plan: "Cloud Expansion Phase 2", progress: 65 },
-                  { name: "Zenith Corp", plan: "Enterprise Suite Migration", progress: 82 },
-                  { name: "Atlas Solutions", plan: "Retention Safeguard Plan", progress: 30 },
-                ].map((plan, i) => (
-                  <div key={i} className="space-y-2 p-4 rounded-lg border bg-card">
+                {ACCOUNT_PLANS.map((plan) => (
+                  <div key={plan.id} className="space-y-2 p-4 rounded-lg border bg-card">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold">{plan.name}</span>
-                      <Badge variant="secondary">{plan.progress}%</Badge>
+                      <span className="font-bold">{CUSTOMERS.find(c => c.id === plan.customerId)?.name || "Unknown"}</span>
+                      <Badge variant="secondary">Target: ${plan.targetRevenue.toLocaleString()}</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{plan.plan}</p>
-                    <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: `${plan.progress}%` }} />
-                    </div>
+                    <p className="text-sm text-muted-foreground">{plan.goal}</p>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Review: {plan.reviewDate}</div>
                   </div>
                 ))}
                 <Button className="w-full" onClick={() => toast({ title: "New Plan Drafted", description: "Select an account to finalize details." })}>Create New Plan</Button>
@@ -83,10 +80,10 @@ export default function AccountManagerHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Avg Health", value: "92", sub: "Excellent across tier-1", icon: HeartPulse, color: "text-accent" },
-          { label: "Renewals (30d)", value: "8", sub: "$1.4M pending", icon: Calendar, color: "text-primary" },
-          { label: "Churn Risk", value: "Low", sub: "Only 1 account at risk", icon: AlertTriangle, color: "text-destructive" },
-          { label: "NPS Score", value: "74", sub: "+5 from last month", icon: Smile, color: "text-accent" },
+          { label: "Avg Health Score", value: avgHealth, sub: "Across all accounts", icon: HeartPulse, color: "text-accent" },
+          { label: "Pending Renewals", value: pendingRenewals.toString(), sub: "Requiring attention", icon: Calendar, color: "text-primary" },
+          { label: "Churn Risk", value: "Low", sub: "Based on sentiment", icon: AlertTriangle, color: "text-destructive" },
+          { label: "Active Plans", value: ACCOUNT_PLANS.length.toString(), sub: "Growth strategies", icon: Smile, color: "text-accent" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -104,47 +101,46 @@ export default function AccountManagerHub() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Strategic Account Watchlist</CardTitle>
-            <CardDescription>Top-tier clients and their current interaction pulse.</CardDescription>
+            <CardTitle className="text-lg font-headline">Key Strategic Renewals</CardTitle>
+            <CardDescription>Upcoming contract dates from the Renewals dataset.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
-              {[
-                { name: "CyberDyne Systems", health: "Excellent", spent: "$450k", status: "Active" },
-                { name: "Aether Group", health: "Poor", spent: "$120k", status: "Renewal Due" },
-                { name: "Zenith Corp", health: "Good", spent: "$890k", status: "Active" },
-              ].map((account, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-all cursor-pointer">
-                  <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center border border-border/50">
-                    <Star className={cn("h-5 w-5", account.health === "Excellent" ? "text-accent" : "text-muted")} />
+              {RENEWALS.map((rel) => {
+                const customer = CUSTOMERS.find(c => c.id === rel.customerId);
+                return (
+                  <div key={rel.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-all cursor-pointer">
+                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center border border-border/50">
+                      <Star className={cn("h-5 w-5", rel.status === "Renewed" ? "text-accent" : "text-muted")} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold">{customer?.name || "Unknown Client"}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-widest">End Date: {rel.endDate}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-bold text-foreground">Reminder: {rel.reminderDate}</div>
+                      <Badge variant="outline" className={cn(
+                        "text-[8px] h-4 border-none",
+                        rel.status === "Renewed" ? "bg-green-500/10 text-green-500" :
+                        rel.status === "Pending" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+                      )}>{rel.status}</Badge>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-bold">{account.name}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{account.status}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-foreground">{account.spent}</div>
-                    <Badge variant="outline" className={cn(
-                      "text-[8px] h-4 border-none",
-                      account.health === "Excellent" ? "bg-green-500/10 text-green-500" :
-                      account.health === "Poor" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
-                    )}>{account.health}</Badge>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Engagement Log</CardTitle>
+            <CardTitle className="text-lg font-headline">Recent Interaction Logs</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {[
-              { type: "Meeting", text: "QBR with CyberDyne", time: "2h ago", icon: History },
-              { type: "Email", text: "Proposal sent to Aether", time: "5h ago", icon: FileText },
-              { type: "Note", text: "Internal status update", time: "1d ago", icon: FileText },
+              { type: "Meeting", text: "Strategic Planning - CUST0001", time: "2h ago", icon: History },
+              { type: "Email", text: "Renewal Discussion - CUST0002", time: "5h ago", icon: FileText },
+              { type: "Note", text: "Account Expansion Analysis", time: "1d ago", icon: FileText },
             ].map((log, i) => (
               <div key={i} className="flex gap-3 items-start p-2 rounded-lg border border-border/30 bg-card/40">
                 <div className="p-1.5 rounded bg-secondary"><log.icon className="h-3 w-3 text-accent" /></div>

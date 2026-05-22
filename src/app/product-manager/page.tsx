@@ -9,17 +9,16 @@ import {
   Lightbulb, 
   MessageSquare, 
   CheckCircle2, 
-  Users, 
   ArrowUpRight,
   Plus,
   FileText,
-  Clock
+  Clock,
+  Heart
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { 
   Dialog, 
   DialogContent, 
@@ -34,9 +33,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { FEEDBACK, CUSTOMERS } from "@/lib/data"
 
 export default function ProductManagerHub() {
   const { toast } = useToast()
+
+  const bugReports = FEEDBACK.filter(f => f.category === 'Bug').length;
+  const performanceIssues = FEEDBACK.filter(f => f.category === 'Performance').length;
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
@@ -85,9 +88,9 @@ export default function ProductManagerHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Active Requests", value: "24", sub: "8 marked high priority", icon: Lightbulb, color: "text-accent" },
-          { label: "Sales Feedback", value: "142", sub: "+12 this week", icon: MessageSquare, color: "text-primary" },
-          { label: "Next Release", value: "v2.4", sub: "Scheduled: Mar 15", icon: Rocket, color: "text-accent" },
+          { label: "Feedback Entries", value: FEEDBACK.length.toString(), sub: "Latest records", icon: Lightbulb, color: "text-accent" },
+          { label: "Bug Reports", value: bugReports.toString(), sub: "Technical debt blockers", icon: MessageSquare, color: "text-primary" },
+          { label: "Perf Tickets", value: performanceIssues.toString(), sub: "Latency optimization", icon: Rocket, color: "text-accent" },
           { label: "Docs Sync", value: "100%", sub: "Fully up to date", icon: CheckCircle2, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -106,26 +109,31 @@ export default function ProductManagerHub() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Sales Priority Feedback</CardTitle>
-            <CardDescription>Requirements captured from field interactions for prioritization.</CardDescription>
+            <CardTitle className="text-lg font-headline">Customer Voice Loop</CardTitle>
+            <CardDescription>Direct feedback from the field categorized by product impact.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {[
-              { title: "Enterprise SSO / SAML Support", votes: 42, impact: "High", status: "Planned" },
-              { title: "Advanced PDF Export Logic", votes: 28, impact: "Medium", status: "Research" },
-              { title: "Mobile Dashboard v2", votes: 15, impact: "High", status: "Backlog" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/50 hover:border-primary/30 transition-all cursor-pointer">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold">{item.title}</h4>
-                    <Badge variant="outline" className="text-[9px] h-4 border-none bg-muted">{item.status}</Badge>
+            {FEEDBACK.map((item) => {
+              const customer = CUSTOMERS.find(c => c.id === item.customerId);
+              return (
+                <div key={item.id} className="flex items-start gap-4 p-4 rounded-xl border border-border/30 bg-card/50">
+                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                    <Heart className={cn("h-5 w-5", item.satisfaction.includes("Satisfied") ? "text-accent" : "text-destructive")} />
                   </div>
-                  <div className="text-[10px] text-muted-foreground">Votes: {item.votes} • Impact: {item.impact}</div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold">{customer?.name || "Unknown Client"} • {item.product}</h4>
+                      <Badge variant="outline" className={cn(
+                        "text-[9px] h-4 border-none",
+                        item.category === 'Bug' ? "bg-destructive/10 text-destructive" : "bg-accent/10 text-accent"
+                      )}>{item.category}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">"{item.text}"</p>
+                    <div className="text-[10px] font-bold text-accent uppercase tracking-tighter">{item.satisfaction}</div>
+                  </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8"><ArrowUpRight className="h-4 w-4" /></Button>
-              </div>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
 
