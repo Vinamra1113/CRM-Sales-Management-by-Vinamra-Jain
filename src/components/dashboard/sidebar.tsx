@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   BarChart3, 
   LayoutDashboard, 
@@ -15,7 +15,11 @@ import {
   Workflow, 
   TrendingUp,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Sun,
+  Moon,
+  LogOut,
+  UserCircle
 } from "lucide-react"
 
 import {
@@ -29,25 +33,52 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useRole, type Role } from "@/components/role-context"
 
 const navigation = [
-  { name: "Executive Dashboard", href: "/dashboard", icon: LayoutDashboard, role: "executive" },
-  { name: "Velocity Pipeline", href: "/pipeline", icon: Layers, role: "sales" },
-  { name: "Customer Ledger", href: "/customers", icon: Users, role: "all" },
-  { name: "Lead Orchestrator", href: "/orchestrator", icon: Workflow, role: "manager" },
-  { name: "Health & Growth", href: "/health", icon: HeartPulse, role: "account" },
-  { name: "Product Bridge", href: "/collaboration", icon: Package, role: "product" },
-  { name: "Performance Target", href: "/performance", icon: TrendingUp, role: "sales" },
+  { name: "Sales Hub", href: "/sales-rep", icon: UserCircle, role: "representative" },
+  { name: "Management Hub", href: "/sales-manager", icon: Workflow, role: "manager" },
+  { name: "Account Hub", href: "/account-manager", icon: HeartPulse, role: "account" },
+  { name: "Marketing Hub", href: "/marketing", icon: BarChart3, role: "marketing" },
+  { name: "Product Hub", href: "/product-manager", icon: Package, role: "product" },
+  { name: "Executive Hub", href: "/executive", icon: LayoutDashboard, role: "executive" },
 ]
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { role, setRole } = useRole()
+  const [theme, setTheme] = React.useState<"dark" | "light">("dark")
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark"
+    setTheme(newTheme)
+    document.documentElement.classList.toggle("dark")
+  }
+
+  const handleRoleChange = (value: string) => {
+    const newRole = value as Role
+    setRole(newRole)
+    // Automatically navigate to the hub of the selected role
+    const navItem = navigation.find(n => n.role === newRole)
+    if (navItem) {
+      router.push(navItem.href)
+    }
+  }
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border/50 p-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <ShieldCheck className="h-5 w-5" />
           </div>
@@ -56,20 +87,37 @@ export function AppSidebar() {
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Digital Sales</span>
           </div>
         </div>
+        
+        <div className="group-data-[collapsible=icon]:hidden">
+          <Select value={role} onValueChange={handleRoleChange}>
+            <SelectTrigger className="w-full bg-sidebar-accent/50 border-sidebar-border h-9 text-xs">
+              <SelectValue placeholder="Select Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="representative">Sales Rep</SelectItem>
+              <SelectItem value="manager">Sales Manager</SelectItem>
+              <SelectItem value="account">Account Manager</SelectItem>
+              <SelectItem value="marketing">Marketing Team</SelectItem>
+              <SelectItem value="product">Product Manager</SelectItem>
+              <SelectItem value="executive">Executive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Workspace</SidebarGroupLabel>
           <SidebarMenu>
             {navigation.map((item) => (
-              <SidebarMenuItem key={item.name}>
+              <SidebarMenuItem key={item.name} className={cn(role !== item.role && "opacity-50 grayscale")}>
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === item.href}
                   tooltip={item.name}
                   className={cn(
                     "transition-all duration-200",
-                    pathname === item.href ? "text-accent" : "hover:text-primary"
+                    pathname === item.href ? "text-accent bg-sidebar-accent" : "hover:text-primary"
                   )}
                 >
                   <Link href={item.href}>
@@ -85,8 +133,17 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border/50 p-4">
+
+      <SidebarFooter className="border-t border-sidebar-border/50 p-4 space-y-2">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={toggleTheme} tooltip="Toggle Theme">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <span className="group-data-[collapsible=icon]:hidden">
+                {theme === "dark" ? "Light Mode" : "Dark Mode"}
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Settings">
               <Link href="/settings">
