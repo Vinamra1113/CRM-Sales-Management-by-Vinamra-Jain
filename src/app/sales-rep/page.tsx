@@ -37,10 +37,16 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { SALES_REPS } from "@/lib/data"
 
 export default function SalesRepresentativeHub() {
   const { toast } = useToast()
   const [isActivityOpen, setIsActivityOpen] = React.useState(false)
+
+  // Use Allison Hill (SR001) as the representative view
+  const currentUser = SALES_REPS[0];
+  const quotaPercent = (currentUser.achievement / currentUser.target) * 100;
+  const remaining = Math.max(0, currentUser.target - currentUser.achievement);
 
   const handleLogActivity = (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,7 +61,7 @@ export default function SalesRepresentativeHub() {
     <div className="p-8 space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold font-headline">Sales Hub</h1>
+          <h1 className="text-3xl font-bold font-headline">Sales Hub: {currentUser.name}</h1>
           <p className="text-muted-foreground">Personal pipeline management and daily activity orchestration.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -98,10 +104,10 @@ export default function SalesRepresentativeHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "My Quota", value: "82%", sub: "$142k remaining", icon: Target, color: "text-accent" },
-          { label: "Active Deals", value: "14", sub: "$1.2M pipeline", icon: Layers, color: "text-primary" },
-          { label: "Tasks Due", value: "8", sub: "3 high priority", icon: Clock, color: "text-accent" },
-          { label: "Avg Close", value: "14d", sub: "Faster than team", icon: TrendingUp, color: "text-primary" },
+          { label: "My Quota", value: `${quotaPercent.toFixed(1)}%`, sub: `$${remaining.toLocaleString()} remaining`, icon: Target, color: "text-accent" },
+          { label: "Active Deals", value: "14", sub: `$${currentUser.achievement.toLocaleString()} achievement`, icon: Layers, color: "text-primary" },
+          { label: "Performance Score", value: currentUser.score.toString(), sub: `Region: ${currentUser.region}`, icon: TrendingUp, color: "text-accent" },
+          { label: "Tasks Due", value: "8", sub: "3 high priority", icon: Clock, color: "text-primary" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

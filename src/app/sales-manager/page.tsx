@@ -19,9 +19,15 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { SALES_REPS } from "@/lib/data"
 
 export default function SalesManagerHub() {
   const { toast } = useToast()
+
+  // Use top performers for the ranking
+  const topPerformers = [...SALES_REPS]
+    .sort((a, b) => (b.achievement / b.target) - (a.achievement / a.target))
+    .slice(0, 5);
 
   const handleAction = (type: 'approve' | 'decline', deal: string) => {
     toast({
@@ -54,10 +60,10 @@ export default function SalesManagerHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Team Quota", value: "74%", sub: "$2.4M to target", icon: TrendingUp, color: "text-primary" },
+          { label: "Team Quota", value: "78%", sub: "$2.4M achievement", icon: TrendingUp, color: "text-primary" },
           { label: "Pending Approvals", value: "4", sub: "2 high impact", icon: CheckCircle2, color: "text-accent" },
-          { label: "Rep Capacity", value: "88%", sub: "North America peak", icon: Users, color: "text-primary" },
-          { label: "Pipeline Velocity", value: "+12%", sub: "MoM acceleration", icon: BarChart3, color: "text-accent" },
+          { label: "Top Performer", value: topPerformers[0].name, sub: topPerformers[0].region, icon: Users, color: "text-primary" },
+          { label: "Active Pipeline", value: "$4.2M", sub: "142 open deals", icon: BarChart3, color: "text-accent" },
         ].map((kpi, i) => (
           <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -106,25 +112,24 @@ export default function SalesManagerHub() {
 
         <Card className="border-border/50 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg font-headline">Team Alpha Ranking</CardTitle>
+            <CardTitle className="text-lg font-headline">Top Performer Ranking</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {[
-              { name: "Elena Rodriguez", quota: 142, trend: "up" },
-              { name: "Sarah Jenkins", quota: 115, trend: "up" },
-              { name: "Marcus Thorne", quota: 94, trend: "down" },
-            ].map((rep, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="text-xs font-bold text-muted-foreground w-4">{i + 1}</div>
-                <div className="flex-1">
-                  <div className="text-xs font-bold">{rep.name}</div>
-                  <Progress value={rep.quota / 1.5} className="h-1 mt-1 bg-secondary" />
+            {topPerformers.map((rep, i) => {
+              const attainment = (rep.achievement / rep.target) * 100;
+              return (
+                <div key={rep.id} className="flex items-center gap-3">
+                  <div className="text-xs font-bold text-muted-foreground w-4">{i + 1}</div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold">{rep.name}</div>
+                    <Progress value={Math.min(100, attainment)} className="h-1 mt-1 bg-secondary" />
+                  </div>
+                  <div className="text-xs font-bold text-accent">{attainment.toFixed(0)}%</div>
                 </div>
-                <div className="text-xs font-bold">{rep.quota}%</div>
-              </div>
-            ))}
+              );
+            })}
             <Button variant="outline" className="w-full text-xs font-bold mt-2" asChild>
-              <Link href="/performance">Team Analytics</Link>
+              <Link href="/performance">Full Leaderboard</Link>
             </Button>
           </CardContent>
         </Card>
